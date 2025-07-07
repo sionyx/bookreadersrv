@@ -1,0 +1,168 @@
+{
+    "templates": {
+        "book_block": {
+            "type": "container",
+            "orientation": "horizontal",
+            "width": {
+                "type": "match_parent"
+            },
+            "height": {
+                "type": "wrap_content"
+            },
+            "background": [
+                {
+                    "type": "solid",
+                    "color": "#0E000000"
+                }
+            ],
+            "border": {
+                "corner_radius": 16
+            },
+            "items": [
+                {
+                    "type": "image",
+                    "width": {
+                        "type": "fixed",
+                        "value": 48
+                    },
+                    "aspect": {
+                        "ratio": 1
+                    },
+                    "$image_url": "cover_url",
+                    "border": {
+                        "corner_radius": 8
+                    },
+                    "margins": {
+                        "top": 16,
+                        "bottom": 16,
+                        "left": 16
+                    }
+                },
+                {
+                    "type": "container",
+                    "orientation": "vertical",
+                    "alignment_vertical": "center",
+                    "items": [
+                        {
+                            "type": "text",
+                            "font_size": 24,
+                            "text_alignment_horizontal": "left",
+                            "text_color": "#000000",
+                            "$text": "book_title",
+                            "width": {
+                                "type": "match_parent"
+                            },
+                            "margins": {
+                                "top": 8,
+                                "bottom": 4,
+                                "left": 8,
+                                "right": 16
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "font_size": 12,
+                            "text_alignment_horizontal": "left",
+                            "text_color": "#333333",
+                            "$text": "book_author",
+                            "width": {
+                                "type": "match_parent"
+                            },
+                            "margins": {
+                                "bottom": 8,
+                                "left": 8,
+                                "right": 16
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "title": {
+            "type": "text",
+            "font_size": 20,
+            "line_height": 24,
+            "font_weight": "bold",
+            "paddings": {
+                "left": 24,
+                "right": 24,
+                "bottom": 16
+            }
+        },
+        "subtitle": {
+            "font_size": 15,
+            "line_height": 20,
+            "type": "text",
+            "paddings": {
+                "left": 24,
+                "right": 24
+            }
+        }
+    },
+    "card": {
+        "log_id": "books_card",
+        "states": [
+            {
+                "state_id": 0,
+                "div": {
+                    "type": "container",
+                    "orientation": "vertical",
+                    "margins": {
+                        "top": 24,
+                        "bottom": 24
+                    },
+                    "height": {
+                        "type": "match_parent"
+                    },
+                    "items": [
+                        {
+                            "type": "title",
+                            "text": "#(title)"
+                        },
+                        {
+                            "type": "subtitle",
+                            "text": "#(description)",
+                            "margins": {
+                                "bottom": 24
+                            }
+                        },
+                        {
+                            "type": "gallery",
+                            "orientation": "vertical",
+                            "width": {
+                                "type": "match_parent"
+                            },
+                            "height": {
+                                "type": "match_parent"
+                            },
+                            "paddings": {
+                                "left": 16,
+                                "right": 16
+                            },
+                            "item_spacing": 16,
+                            "items": [
+#for(section in sections):
+                                {
+                                    "type": "book_block",
+                                    "book_author": "",
+                                    "book_title": "#(section.title)",
+                                    "cover_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/book_mini.png",
+                                    "actions": [
+                                        {
+                                            "log_id": "button_pressed",
+                                            "url": "navigate://page?title=#(section.title)&url=#(baseUrl)/app/sections/#(section.name)"
+                                        }
+                                    ]
+                                },
+#endfor
+                                {
+                                    "type": "separator"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}

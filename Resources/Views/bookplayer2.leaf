@@ -1,0 +1,344 @@
+{
+    "templates": {
+        "page": {
+            "type": "container",
+            "orientation": "vertical",
+            "paddings": {
+                "top": 0,
+                "bottom": 24
+            },
+            "background": [
+                {
+                    "type": "solid",
+                    "color": "#4172bc",
+                    "angle": 270
+                }
+            ],
+            "height": {
+                "type": "match_parent"
+            }
+        },
+        "cover_container": {
+            "type": "container",
+            "orientation": "horizontal",
+            "width": {
+                "type": "match_parent"
+            },           
+            "content_alignment_horizontal": "center"
+        },
+        "cover_image": {
+            "type": "image",
+            "$image_url": "image_url",
+            "width": {
+                "type": "match_parent"
+            },
+            "aspect": {
+                "ratio": 1
+            }, 
+            "border": {
+                "stroke": {
+                    "color": "#7f4172bc",
+                    "width": 0
+                },
+                "corners_radius": {
+                    "bottom-left": 30,
+                    "bottom-right": 30,
+                    "top-left": 0,
+                    "top-right": 0
+                }
+            }
+        },
+        "title": {
+            "type": "text",
+            "font_size": 20,
+            "line_height": 24,
+            "font_weight": "bold",
+            "text_color": "#FFFFFF",
+            "text_alignment_horizontal": "left",
+            "margins": {
+                "top": 16
+            },
+            "paddings": {
+                "left": 24,
+                "right": 24
+            },
+            "width": {
+                "type": "match_parent"
+            }
+        },
+        "subtitle": {
+            "font_size": 14,
+            "line_height": 20,
+            "type": "text",
+            "text_color": "#a5c6f8",
+            "width": {
+                "type": "match_parent"
+            },
+            "text_alignment_horizontal": "left",
+            "paddings": {
+                "left": 24,
+                "right": 24,
+                "bottom": 16
+            }
+        },
+        "link": {
+            "font_size": 14,
+            "line_height": 20,
+            "type": "text",
+            "width": {
+                "type": "match_parent"
+            },
+            "text_color": "#feca40",
+            "text_alignment_horizontal": "left",
+            "underline": "single",
+            "margins": {
+                "top": 16
+            },
+            "paddings": {
+                "left": 24,
+                "right": 24,
+                "bottom": 16
+            },
+            "$text": "link",
+            "actions": [
+                {
+                    "log_id": "next",
+                    "$url": "action"
+                }
+            ]        
+        },
+        "description": {
+            "font_size": 14,
+            "line_height": 20,
+            "type": "text",
+            "text_color": "#a5c6f8",
+            "width": {
+                "type": "match_parent"
+            },
+            "text_alignment_horizontal": "left",
+            "paddings": {
+                "left": 24,
+                "right": 24,
+                "bottom": 16
+            }
+        },
+        "control_button": {
+            "type": "image",
+            "scale": "fit",
+            "aspect": {
+                "ratio": 1
+            },
+            "width": {
+                "type": "fixed",
+                "value": 48
+            }, 
+            "tint_color": "#ffffff"
+        },
+        "control_button_mini": {
+            "type": "image",
+            "scale": "fit",
+            "aspect": {
+                "ratio": 1
+            },
+            "width": {
+                "type": "fixed",
+                "value": 48
+            },
+            "paddings": {
+                "left": 12,
+                "right": 12,
+                "bottom": 12,
+                "top": 12
+            }, 
+            "tint_color": "#a5c6f8"
+        }
+    },
+    "card": {
+        "log_id": "sample_card",
+        "variables": [
+            {
+                "name": "video_time",
+                "type": "integer",
+                "value": 0
+            }
+        ],
+        "states": [
+            {
+                "state_id": 0,
+                "div": {
+                    "type": "page",
+                    "items": [
+                        {
+                            "type": "cover_container",
+                            "orientation": "overlap",
+                            "items": [
+                                {
+                                    "type": "cover_image",
+                                    "image_url": "#(book.coverUrl)",
+                                    "margins": {
+                                        "bottom": 24
+                                    }
+                                },
+                                {
+                                    "type": "state",
+                                    "div_id": "control",
+                                    "width": {
+                                        "type": "wrap_content"
+                                    },
+                                    "alignment_horizontal": "center",
+                                    "alignment_vertical": "bottom",
+                                    "states": [
+                                        {
+                                            "state_id": "paused",
+                                            "div": {
+                                                "type": "control_button",
+                                                "image_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/controls/play-circle-fill.png",
+                                                "actions": [
+                                                    {
+                                                        "log_id": "play",
+                                                        "url": "div-action://video?id=audio_player&action=start"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "state_id": "playing",
+                                            "div": {
+                                                "type": "control_button",
+                                                "image_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/controls/pause-circle-fill.png",
+                                                "actions": [
+                                                    {
+                                                        "log_id": "pause",
+                                                        "url": "div-action://video?id=audio_player&action=pause"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "title",
+                            "text": "QQQ #(book.title)"
+                        },
+                        {
+                            "type": "subtitle",
+                            "text": "#(book.authorFirstName) #(book.authorLastName)"
+                        },
+                        {
+                            "type": "video",
+                            "id": "audio_player",
+                            "video_sources": [
+                                {
+                                    "type": "video_source",
+                                    "url": "#(book.mediaUrl)",
+                                    "mime_type": "audio/mp3"
+                                }
+                            ],
+                            "player_settings_payload": {
+                                "cover": "#(book.coverUrl)",
+                                "artist": "#(book.authorFirstName) #(book.authorLastName)",
+                                "title": "#(book.title)"
+                            },
+                            "preload_required": true,
+                            "repeatable": false,
+                            "autostart": false,
+                            "muted": false,
+                            "elapsed_time_variable": "video_time",
+                            "height": {
+                                "type": "fixed",
+                                "value": 0
+                            },
+                            "background": [
+                                {
+                                    "type": "solid",
+                                    "color": "#000000"
+                                }
+                            ],
+                            "disappear_actions": [
+                                {
+                                    "log_id": "stop",
+                                    "url": "div-action://video?id=audio_player&action=pause"
+                                }
+                            ],
+                            "buffering_actions":[],
+                            "fatal_actions": [],
+                            "pause_actions": [
+                                {
+                                    "log_id": "on_pause",
+                                    "url": "div-action://set_state?state_id=0/control/paused"
+                                }
+                            ],
+                            "resume_actions":[
+                                {
+                                    "log_id": "on_play",
+                                    "url": "div-action://set_state?state_id=0/control/playing"
+                                }
+                            ],
+                            "end_actions":[]
+                        },
+                        {
+                            "type": "container",
+                            "orientation": "horizontal",
+                            "width": {
+                                "type": "match_parent"
+                            },
+                            "height": {
+                                "type": "wrap_content"
+                            },
+                            "content_alignment_horizontal": "center",
+                            "items": [
+                                {
+                                    "type": "control_button_mini",
+                                    "image_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/controls/rewind-fill_mini.png",
+                                    "margins": {
+                                        "left": 10,
+                                        "right": 10
+                                    },
+                                    "actions": [
+                                        {
+                                            "log_id": "rewind",
+                                            "url": "div-action://set_variable?name=video_time&value=@{video_time-5000}"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "subtitle",
+                                    "width": {
+                                        "type": "wrap_content"
+                                    },
+                                    "text_alignment_horizontal": "center",
+                                    "text": "@{video_time / 60000}:@{(video_time / 1000) % 60 < 10 ? '0' : ''}@{(video_time / 1000) % 60}"
+                                },
+                                {
+                                    "type": "control_button_mini",
+                                    "image_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/controls/fast-forward-fill_mini.png",
+                                    "margins": {
+                                        "left": 10,
+                                        "right": 10
+                                    },
+                                    "actions": [
+                                        {
+                                            "log_id": "forward",
+                                            "url": "div-action://set_variable?name=video_time&value=@{video_time+5000}"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "link",
+                            "link": "#(book.textLink)",
+                            "action": "browse://ext?url=#(book.textLink)"
+                        },
+                        {
+                            "type": "description",
+                            "text": "#(book.description)"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}

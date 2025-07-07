@@ -8,6 +8,8 @@ import Vapor
 public func configure(_ app: Application) async throws {
     // uncomment to serve files from /Public folder
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+    
+    print("DATABASE_NAME: \(Environment.get("DATABASE_NAME") ?? "[unknown]")")
 
     app.databases.use(DatabaseConfigurationFactory.postgres(configuration: .init(
         hostname: Environment.get("DATABASE_HOST") ?? "localhost",
@@ -17,11 +19,17 @@ public func configure(_ app: Application) async throws {
         database: Environment.get("DATABASE_NAME") ?? "vapor_database",
         tls: .prefer(try .init(configuration: .clientDefault)))
     ), as: .psql)
-
-    app.migrations.add(CreateTodo())
+    
+    
+    app.migrations.add(CreateSection())
+    app.migrations.add(CreateAuthor())
+    app.migrations.add(CreateBook())
+    app.migrations.add(UpdateBook1())
+    app.migrations.add(UpdateSection1())
 
     app.views.use(.leaf)
-
+    
+    app.routes.defaultMaxBodySize = "512kb"
 
     // register routes
     try routes(app)
