@@ -112,9 +112,13 @@ final class Book: Model, @unchecked Sendable {
     func toDetailsDTO() -> BookDetailsDTO {
         BookDetailsDTO(
             id: self.id,
+            authorId: self.author.id,
             authorFirstName: self.author.firstName,
             authorLastName: self.author.lastName,
+            authorPhoto: self.author.photoUrl,
             sectionTitle: self.section.title,
+            sectionName: self.section.name,
+            sectionCover: self.section.coverUrl,
             title: self.$title.value ?? "",
             duration: self.$duration.value ?? 0,
             mediaUrl: self.$mediaUrl.value ?? "",

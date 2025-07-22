@@ -53,9 +53,13 @@ struct BookShortDTO: Content {
 
 struct BookDetailsDTO: Content {
     var id: UUID?
+    var authorId: UUID?
     var authorFirstName: String
     var authorLastName: String
+    var authorPhoto: String
     var sectionTitle: String
+    var sectionName: String
+    var sectionCover: String
     var title: String
     var duration: Int32
     var mediaUrl: String
