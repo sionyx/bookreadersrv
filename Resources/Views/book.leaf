@@ -1,0 +1,723 @@
+{
+    "templates": {
+        "page": {
+            "type": "container",
+            "orientation": "vertical",
+            "content_alignment_horizontal": "center",
+            "paddings": {
+                "top": 0,
+                "bottom": 0
+            },
+            "background": [
+                {
+                    "type": "solid",
+                    "color": "#375688"
+                }
+            ],
+            "width": {
+                "type": "match_parent"
+            },
+            "height": {
+                "type": "match_parent"
+            }
+        },
+        "header_bar": {
+            "type": "container",
+            "orientation": "horizontal",
+            "margins": {
+                "top": "@{safeAreaTop}"
+            },
+            "width": {
+                "type": "fixed",
+                "value": "@{screenWidth > 500 ? 500 : screenWidth}"
+            },
+            "items": [
+                {
+                  "type": "back_button",
+                  "alignment_horizontal": "left",
+                  "alignment_vertical": "center",
+                  "margins": {
+                    "left": 8,
+                    "right": 0
+                  },
+                  "actions": [
+                      {
+                          "log_id": "dismiss",
+                          "url": "navigate://dismiss"
+                      }
+                  ]
+                },
+                {
+                    "type": "text",
+                    "font_size": 24,
+                    "text_alignment_horizontal": "left",
+                    "alignment_horizontal": "center",
+                    "text_color": "#FFFFFF",
+                    "$text": "title",
+                    "width": {
+                        "type": "match_parent"
+                    },
+                    "margins": {
+                        "top": 8,
+                        "bottom": 4,
+                        "left": 8,
+                        "right": 16
+                    }
+                }
+            ]
+        },
+        "content": {
+            "type": "container",
+            "orientation": "vertical",
+            "content_alignment_horizontal": "center",            
+            "width": {
+                "type": "fixed",
+                "value": "@{screenWidth > 500 ? 500 : screenWidth}"
+            },
+            "height": {
+                "type": "match_parent"
+            }        
+        },
+        "cover_image": {
+            "type": "image",
+            "$image_url": "image_url",
+            "width": {
+                "type": "match_parent"
+            },
+            "margins": {
+                "left": 24,
+                "right": 24
+            },
+            "_height": {
+                "type": "wrap_content"
+            },
+            "aspect": {
+                "ratio": 1
+            }, 
+            "background": [
+                {
+                    "type": "solid",
+                    "color": "#375688",
+                    "angle": 270
+                }
+            ],
+            "border": {
+                "stroke": {
+                    "color": "#7f4172bc",
+                    "width": 0
+                },
+                "corners_radius": {
+                    "bottom-left": 16,
+                    "bottom-right": 16,
+                    "top-left": 16,
+                    "top-right": 16
+                }
+            }
+        },
+        "title": {
+            "type": "text",
+            "font_size": 20,
+            "line_height": 24,
+            "font_weight": "bold",
+            "text_color": "#FFFFFF",
+            "text_alignment_horizontal": "left",
+            "margins": {
+                "top": 16
+            },
+            "paddings": {
+                "left": 24,
+                "right": 24
+            },
+            "width": {
+                "type": "match_parent"
+            }
+        },
+        "subtitle": {
+            "font_size": 14,
+            "line_height": 20,
+            "type": "text",
+            "text_color": "#a5c6f8",
+            "paddings": {
+                "left": 24,
+                "right": 24
+            },
+            "width": {
+                "type": "match_parent"
+            },
+            "text_alignment_horizontal": "left"
+        },
+        "timestamp": {
+            "font_size": 16,
+            "line_height": 48,
+            "type": "text",
+            "text_color": "#a5c6f8",
+            "width": {
+                "type": "match_parent"
+            },
+            "text_alignment_horizontal": "left",
+            "paddings": {
+                "left": 24,
+                "right": 24,
+                "bottom": 16
+            }
+        },
+        "link": {
+            "font_size": 14,
+            "line_height": 22,
+            "type": "text",
+            "width": {
+                "type": "match_parent"
+            },
+            "text_color": "#feca40",
+            "text_alignment_horizontal": "left",
+            "underline": "single",
+            "margins": {
+              "top": 8,
+              "bottom": 8
+            },
+            "paddings": {
+                "left": 24,
+                "right": 24,
+                "bottom": 12
+            },
+            "$text": "link",
+            "actions": [
+                {
+                    "log_id": "next",
+                    "$url": "action"
+                }
+            ]        
+        },
+        "description": {
+            "font_size": 14,
+            "line_height": 20,
+            "type": "text",
+            "text_color": "#a5c6f8",
+            "width": {
+                "type": "match_parent"
+            },
+            "paddings": {
+                "left": 24,
+                "right": 24
+            },
+            "text_alignment_horizontal": "left"
+        },
+        "back_button": {
+            "type": "image",
+            "scale": "fit",
+            "image_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/controls/arrow-left-circle-fill.png",
+            "aspect": {
+                "ratio": 1
+            },
+            "width": {
+                "type": "fixed",
+                "value": 48
+            }, 
+            "paddings": {
+                "top": 12,
+                "bottom": 12,
+                "left": 12,
+                "right": 12
+            },
+            "tint_color": "#ffffff"
+        },
+        "control_button_text": {
+            "type": "text",
+            "font_size": 12,
+            "line_height": 48,
+            "text_color": "#a5c6f8",
+            "text_alignment_horizontal": "center",
+            "width": {
+                "type": "fixed",
+                "value": 48
+            },
+            "paddings": {
+                "left": 8,
+                "right": 8
+            }, 
+            "margins": {
+                "left": 8,
+                "right": 8
+            },
+            "border": {
+                "stroke": {
+                    "color": "#a5c6f8",
+                    "width": 0
+                },
+                "corners_radius": {
+                    "bottom-left": 6,
+                    "bottom-right": 6,
+                    "top-left": 6,
+                    "top-right": 6
+                }
+            }
+        },
+
+        "user_block": {
+            "type": "container",
+            "orientation": "horizontal",
+            "height": {
+                "type": "wrap_content"
+            },
+            "margins": {
+                "top": 12,
+                "left": 24,
+                "right": 24,
+                "bottom": 12
+            },
+            "items": [
+                {
+                    "type": "image",
+                    "width": {
+                        "type": "fixed",
+                        "value": 32
+                    },
+                    "aspect": {
+                        "ratio": 1
+                    },
+                    "$image_url": "photo_url",
+                    "border": {
+                        "corner_radius": 16
+                    },
+                    "margins": {
+                        "right": 16
+                    }
+                },                
+                {
+                    "font_size": 18,
+                    "line_height": 32,
+                    "type": "text",
+                    "text_color": "#a5c6f8",
+                    "width": {
+                        "type": "match_parent"
+                    },
+                    "text_alignment_horizontal": "left",
+                    "$text": "text"
+                }
+            ]
+        },        
+        "author_block": {
+            "type": "container",
+            "orientation": "horizontal",
+            "height": {
+                "type": "wrap_content"
+            },
+            "margins": {
+                "top": 12,
+                "left": 24,
+                "right": 24
+            },
+            "items": [
+                {
+                    "type": "image",
+                    "width": {
+                        "type": "fixed",
+                        "value": 64
+                    },
+                    "aspect": {
+                        "ratio": 1
+                    },
+                    "$image_url": "photo_url",
+                    "border": {
+                        "corner_radius": 32
+                    },
+                    "margins": {
+                        "right": 16
+                    }
+                },                
+                {
+                    "type": "container",
+                    "orientation": "vertical",
+                    "alignment_vertical": "center",
+                    "items": [
+                        {
+                            "font_size": 20,
+                            "line_height": 20,
+                            "type": "text",
+                            "text_color": "#FFFFFF",
+                            "width": {
+                                "type": "match_parent"
+                            },
+                            "text_alignment_horizontal": "left",
+                            "$text": "name"
+                        },
+                        {
+                            "font_size": 14,
+                            "line_height": 20,
+                            "type": "text",
+                            "text_color": "#a5c6f8",
+                            "width": {
+                                "type": "match_parent"
+                            },
+                            "text_alignment_horizontal": "left",
+                            "$text": "role"
+                        }
+                    ]
+                }
+            ]
+        },
+        
+        "block": {
+            "type": "container",
+            "orientation": "horizontal",
+            "width": {
+                "type": "match_parent"
+            },
+            "height": {
+                "type": "wrap_content"
+            },
+            "background": [
+                {
+                    "type": "solid",
+                    "color": "#4172bc"
+                }
+            ],
+            "border": {
+                "corner_radius": 16
+            }
+        },
+        "section_block": {
+            "type": "block",
+            "items": [
+                {
+                    "type": "image",
+                    "width": {
+                        "type": "fixed",
+                        "value": 48
+                    },
+                    "aspect": {
+                        "ratio": 1
+                    },
+                    "$image_url": "cover_url",
+                    "border": {
+                        "corner_radius": 8
+                    },
+                    "margins": {
+                        "top": 16,
+                        "bottom": 16,
+                        "left": 16
+                    }
+                },
+                {
+                    "type": "container",
+                    "orientation": "vertical",
+                    "alignment_vertical": "center",
+                    "items": [
+                        {
+                            "type": "text",
+                            "font_size": 24,
+                            "text_alignment_horizontal": "left",
+                            "text_color": "#FFFFFF",
+                            "$text": "book_title",
+                            "width": {
+                                "type": "match_parent"
+                            },
+                            "margins": {
+                                "top": 8,
+                                "bottom": 4,
+                                "left": 8,
+                                "right": 16
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "book_block": {
+            "type": "block",
+            "items": [
+                {
+                    "type": "image",
+                    "width": {
+                        "type": "fixed",
+                        "value": 48
+                    },
+                    "aspect": {
+                        "ratio": 1
+                    },
+                    "$image_url": "cover_url",
+                    "border": {
+                        "corner_radius": 8
+                    },
+                    "margins": {
+                        "top": 16,
+                        "bottom": 20,
+                        "left": 16
+                    }
+                },
+                {
+                    "type": "container",
+                    "orientation": "vertical",
+                    "alignment_vertical": "center",
+                    "items": [
+                        {
+                            "type": "text",
+                            "font_size": 24,
+                            "text_alignment_horizontal": "left",
+                            "text_color": "#FFFFFF",
+                            "$text": "book_title",
+                            "width": {
+                                "type": "match_parent"
+                            },
+                            "margins": {
+                                "top": 8,
+                                "bottom": 4,
+                                "left": 8,
+                                "right": 16
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "font_size": 12,
+                            "text_alignment_horizontal": "left",
+                            "text_color": "#a5c6f8",
+                            "$text": "book_author",
+                            "width": {
+                                "type": "match_parent"
+                            },
+                            "margins": {
+                                "bottom": 8,
+                                "left": 8,
+                                "right": 16
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "books_pager": {
+            "type": "pager",
+            "item_spacing": {
+                "type": "fixed",
+                "value": 8
+            },
+            "height": {
+                "type": "wrap_content"
+            },
+            "layout_mode": {
+                "type": "fixed",
+                "neighbour_page_width": {
+                    "type": "fixed",
+                    "value": 16
+                }
+            },
+            "paddings": {
+                "right": 24,
+                "left": 24
+            },
+            "margins": {
+                "top": 8,
+                "bottom": 8
+            }
+        },
+        "listen_button": {
+            "type": "text",
+            "width": {
+                "type": "match_parent"
+            },
+            "height": {
+                "type": "wrap_content"
+            },
+            "paddings": {
+                "left": 24,
+                "top": 16,
+                "right": 16,
+                "bottom": 16
+            },
+            "margins": {
+                "top": 12,
+                "left": 24,
+                "right": 24,
+                "bottom": 12
+            },
+            "border": {
+                "corner_radius": 8
+            },
+            "background": [
+                {
+                    "type": "solid",
+                    "color": "#4172bc"
+                }
+            ],
+            "font_size": 14,
+            "font_weight": "medium",
+            "text_alignment_vertical": "center",
+            "text_alignment_horizontal": "center",
+            "text_color": "#FFFFFF"
+        }
+    },
+    "card": {
+        "log_id": "sample_card",
+        "variables": [
+            {
+                "name": "default_cover_url",
+                "type": "string",
+                "value": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/images/bookreader.jpg"
+            }            
+        ],
+        "states": [
+            {
+                "state_id": 0,
+                "div": {
+                    "type": "page",
+                    "items": [
+                        {
+                            "type": "header_bar",
+                            "title": "#(book.title)"
+                        },
+                        {
+                    "type": "content",
+                    "items": [
+                        {
+                            "type": "gallery",
+                            "orientation": "vertical",
+                            "width": {
+                                "type": "match_parent"
+                            },
+                            "height": {
+                                "type": "match_parent"
+                            },
+                            "paddings": {
+                                "bottom": 24
+                            },
+                            "item_spacing": 0,
+                            "items": [
+                                {
+                                    "type": "user_block",
+                                    "photo_url": "#(book.user.photoUrl)",
+                                    "text": "#(book.user.login)"
+                                },
+                                {
+                                    "type": "cover_image",
+                                    "image_url": "@{ '#(book.coverUrl)' != '' ? '#(book.coverUrl)' : default_cover_url}"
+                                },
+#for(role in book.roles):
+                                {
+                                    "type": "author_block",
+                                    "photo_url": "#(role.author.photoUrl)",
+                                    "name": "#(role.author.firstName) #(role.author.lastName)",
+                                    "role": "#(role.typeString)",
+                                    "actions": [
+                                        {
+                                            "log_id": "button_pressed",
+                                            "url": "navigate://page?title=#(role.author.lastName)&url=#(baseUrl)/app/authors/#(role.author.id)"
+                                        }
+                                    ]                                    
+                                },
+#endfor
+
+                                
+                                {
+                                    "type": "listen_button",
+                                    "text": "Слушать",
+                                    "actions": [
+                                        {
+                                            "log_id": "listen",
+                                            "url": "navigate://page?title=#(book.title)&present=fullscreen&url=#(baseUrl)/app/player/#(book.id)"
+                                        }
+                                    ]
+                                },
+#if(book.textLink):
+                                {
+                                    "type": "link",
+                                    "link": "#(book.textLink)",
+                                    "action": "browse://ext?url=#(book.textLink)"
+                                },
+#endif
+#if(book.description):
+                                {
+                                    "type": "description",
+                                    "text": "#(book.description)"
+                                },
+#endif
+#if(count(userBooks) > 0):
+                                {
+                                    "type": "title",
+                                    "text": "Еще от #(book.user.login)"
+                                },
+                                {
+                                    "type": "books_pager",
+                                    "id": "author_books",
+                                    "items": [
+#for(book in userBooks):
+                                        {
+                                            "type": "book_block",
+                                            "book_author": "#(book.author)",
+                                            "book_title": "#(book.title)",
+                                            "cover_url": "@{ '#(book.previewUrl)' != '' ? '#(book.previewUrl)' : default_cover_url}",
+                                            "actions": [
+                                                {
+                                                    "log_id": "button_pressed",
+                                                    "url": "navigate://page?title=#(book.title)&url=#(baseUrl)/app/books/#(book.id)"
+                                                }
+                                            ]
+                                        },
+#endfor
+                                        {
+                                            "type": "book_block",
+                                            "book_author": "Перейти к пользователю",
+                                            "book_title": "#(book.user.login)",
+                                            "cover_url": "@{ '#(book.user.photoUrl)' != '' ? '#(book.user.photoUrl)' : default_cover_url }",
+                                            "actions": [
+                                                {
+                                                    "log_id": "button_pressed",
+                                                    "url": "navigate://page?title=#(section.title)&url=#(baseUrl)/app/authors/#(book.authorId)"
+                                                }
+                                            ]
+                                        }                                
+                                    ]
+                                },
+#endif                                
+#if(count(sectionBooks) > 0):
+                                {
+                                    "type": "title",
+                                    "text": "Еще в разделе",
+                                    "visibility": "@{#count(sectionBooks) > 0 ? 'visible' : 'invisible'}"
+                                },
+                                {
+                                    "type": "books_pager",
+                                    "items": [
+#for(book in sectionBooks):
+                                        {
+                                            "type": "book_block",
+                                            "book_author": "#(book.author)",
+                                            "book_title": "#(book.title)",
+                                            "cover_url": "@{ '#(book.previewUrl)' != '' ? '#(book.previewUrl)' : default_cover_url}",
+                                            "actions": [
+                                                {
+                                                    "log_id": "button_pressed",
+                                                    "url": "navigate://page?title=#(book.title)&url=#(baseUrl)/app/books/#(book.id)"
+                                                }
+                                            ]
+                                        },
+#endfor
+                                        {
+                                            "type": "book_block",
+                                            "book_author": "Перейти в раздел",
+                                            "book_title": "#(book.section.title)",
+                                            "cover_url": "@{ '#(book.section.coverUrl)' != '' ? '#(book.section.coverUrl)' : default_cover_url }",
+                                            "visibility": "@{#count(sectionBooks) > 0 ? 'visible' : 'invisible'}",
+                                            "actions": [
+                                                {
+                                                    "log_id": "button_pressed",
+                                                    "url": "navigate://page?title=#(book.sectionTitle)&url=#(baseUrl)/app/sections/#(book.sectionName)"
+                                                }
+                                            ]
+                                        }                                
+                                    ]
+                                },
+#endif
+                                {
+                                    "type": "separator",
+                                    "visibility": "invisible"
+                                }                                
+                            ]
+                        }
+                    ]
+                }
+                    ]
+                }
+            }
+        ]
+    }
+}

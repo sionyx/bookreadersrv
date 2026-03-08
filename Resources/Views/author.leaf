@@ -148,6 +148,23 @@
                 }
             ]
         },
+        "author_photo": {
+            "type": "image",
+            "width": {
+                "type": "fixed",
+                "value": 64
+            },
+            "aspect": {
+                "ratio": 1
+            },
+            "$image_url": "photo_url",
+            "border": {
+                "corner_radius": 32
+            },
+            "margins": {
+                "right": 16
+            }
+        },
         "title": {
             "type": "text",
             "text_color": "#FFFFFF",
@@ -168,6 +185,41 @@
             "paddings": {
                 "left": 24,
                 "right": 24
+            }
+        },
+        "link": {
+            "font_size": 14,
+            "line_height": 22,
+            "type": "text",
+            "width": {
+                "type": "match_parent"
+            },
+            "text_color": "#feca40",
+            "text_alignment_horizontal": "left",
+            "underline": "single",
+            "paddings": {
+                "top": 12,
+                "bottom": 12
+            },
+            "$text": "link",
+            "actions": [
+                {
+                    "log_id": "next",
+                    "$url": "action"
+                }
+            ]        
+        },        
+        "description": {
+            "font_size": 14,
+            "line_height": 20,
+            "type": "text",
+            "text_color": "#a5c6f8",
+            "width": {
+                "type": "match_parent"
+            },
+            "text_alignment_horizontal": "left",
+            "paddings": {
+                "bottom": 8
             }
         },
         "back_button": {
@@ -237,7 +289,7 @@
                                     "text_alignment_horizontal": "left",
                                     "alignment_horizontal": "center",
                                     "text_color": "#FFFFFF",
-                                    "text": "#(title)",
+                                    "text": "#(author.firstName) #(author.lastName)",
                                     "width": {
                                         "type": "match_parent"
                                     },
@@ -267,20 +319,33 @@
                             },
                             "item_spacing": 16,
                             "items": [
-#for(section in sections):
                                 {
-                                    "type": "section_block",
-                                    "book_author": "",
-                                    "book_title": "#(section.title)",
-                                    "cover_url": "@{ '#(section.coverUrl)' != '' ? '#(section.coverUrl)' : default_cover_url}",
-                                    "actions": [
+                                    "type": "container",
+                                    "orientation": "horizontal",
+                                    "height": {
+                                        "type": "wrap_content"
+                                    },
+                                    "items": [
                                         {
-                                            "log_id": "button_pressed",
-                                            "url": "navigate://page?title=#(section.title)&url=#(baseUrl)/app/sections/#(section.name)"
+                                            "type": "author_photo",
+                                            "visibility": "@{len('#(author.photoUrl)') > 0 ? 'visible' : 'invisible'}",
+                                            "photo_url": "#(author.photoUrl)"
+                                        },
+                                        {
+                                            "type": "description",
+                                            "visibility": "@{len('#(author.description)') > 0 ? 'visible' : 'invisible'}",
+                                            "text": "#(author.description)"
                                         }
                                     ]
                                 },
-#endfor
+                                {
+                                    "type": "link",
+                                    "visibility": "@{len('#(author.link)') > 0 ? 'visible' : 'invisible'}",
+                                    "link": "@{len('#(author.link)') > 0 ? '#(author.link)' : ''}",
+                                    "action": "browse://ext?url=#(author.link)"
+                                },
+
+                                
 #for(book in books):
                                 {
                                     "type": "book_block",
@@ -290,7 +355,7 @@
                                     "actions": [
                                         {
                                             "log_id": "button_pressed",
-                                            "url": "navigate://page?title=#(book.title)&url=#(baseUrl)/app/books/#(book.id)"
+                                            "url": "navigate://page?title=#(book.title)&present=fullscreen&url=#(baseUrl)/app/books/#(book.id)"
                                         }
                                     ]
                                 },

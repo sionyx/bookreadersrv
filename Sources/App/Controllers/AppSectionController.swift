@@ -14,6 +14,12 @@ struct AppSectionController: RouteCollection {
         
         let authors = routes.grouped("authors")
         authors.get(":authorId", use: self.author)
+        
+        let player = routes.grouped("player")
+        player.get(":bookId", use: self.player)
+
+        let page = routes.grouped("page")
+        page.get(":template", use: self.page)
     }
     
     @Sendable
@@ -23,11 +29,12 @@ struct AppSectionController: RouteCollection {
             .all()
             .map { $0.toDTO() }
         
-        return try await req.view.render("section", PageModel(title: "Каталог",
+        return try await req.view.render("root", SectionModel(title: "Каталог",
                                                               description: "Разделы приложения",
-                                                              baseUrl: req.baseUrl,
                                                               sections: sections,
-                                                              books: []))
+                                                              books: [],
+                                                              baseUrl: req.baseUrl,
+                                                              platform: req.platform))
     }
     
     @Sendable
@@ -53,21 +60,28 @@ struct AppSectionController: RouteCollection {
         
         let books = try await Book.query(on: req.db)
             .filter(\.$section.$id == sectionId)
+            .filter(\.$publishDate < Date.now)
+            .sort(\.$publishDate)
+            .with(\.$user)
             .with(\.$author)
             .with(\.$section)
+            .with(\.$roles) { role in
+                role.with(\.$author)
+            }
             .all()
             .map { $0.toShortDTO() }
         
-        var template = "books"
+        var template = "section"
         if !section.template.isEmpty {
             template = section.template
         }
         
-        return try await req.view.render(template, PageModel(title: section.title,
-                                                             description: section.description,
-                                                             baseUrl: req.baseUrl,
-                                                             sections: sections,
-                                                             books: books))
+        return try await req.view.render(template, SectionModel(title: section.title,
+                                                                description: section.description,
+                                                                sections: sections,
+                                                                books: books,
+                                                                baseUrl: req.baseUrl,
+                                                                platform: req.platform))
     }
     
     @Sendable
@@ -80,44 +94,53 @@ struct AppSectionController: RouteCollection {
         
         let book = try await Book.query(on: req.db)
             .filter(\.$id == bookId)
+            .with(\.$user)
             .with(\.$author)
             .with(\.$section)
+            .with(\.$roles) { role in
+                role.with(\.$author)
+            }
+            .with(\.$chapters)
             .first()
         
-        guard let book = book else {
+        guard let bookDTO = book?.toDetailsDTO() else {
             throw Abort(.notFound)
         }
         
         let sectionBooks = try await Book.query(on: req.db)
-            .filter(\.$id != book.requireID())
-            .filter(\.$section.$id == book.$section.id)
-            .with(\.$author)
+            .filter(\.$id != bookDTO.id!)
+            .filter(\.$section.$id == bookDTO.section.id!)
+            .filter(\.$publishDate < Date.now)
+            .sort(\.$publishDate)
+            .with(\.$user)
             .range(..<10)
             .all()
-            .map { $0.toShortDTO(sectionTitle: book.section.title) }
+            .map { $0.toShortDTO(sectionTitle: bookDTO.section.title) }
         
-        let authorBooks = try await Book.query(on: req.db)
-            .filter(\.$id != book.requireID())
-            .filter(\.$author.$id == book.$author.id)
+        let userBooks = try await Book.query(on: req.db)
+            .filter(\.$id != bookDTO.id!)
+            .filter(\.$user.$id == bookDTO.user.id!)
+            .filter(\.$publishDate < Date.now)
+            .sort(\.$publishDate)
+            .with(\.$user)
             .with(\.$section)
             .range(..<10)
             .all()
-            .map { $0.toShortDTO(authorFirstName: book.author.firstName, authorLastName: book.author.lastName) }
+            .map { $0.toShortDTO() }
         
-        var template = "bookplayer"
-        if let bookTemplate = book.template,
-           !bookTemplate.isEmpty {
-            template = bookTemplate
+        var template = "book"
+        if !bookDTO.template.isEmpty {
+            template = bookDTO.template
         }
-        else if let sectionBookTemplate = book.section.bookTemplate,
-                !sectionBookTemplate.isEmpty {
-            template = sectionBookTemplate
+        else if !bookDTO.section.bookTemplate.isEmpty {
+            template = bookDTO.section.bookTemplate
         }
         
-        return try await req.view.render(template, PlayerModel(book: book.toDetailsDTO(),
-                                                               baseUrl: req.baseUrl,
-                                                               sectionBooks: sectionBooks,
-                                                               authorBooks: authorBooks ))
+        return try await req.view.render(template, BookModel(book: bookDTO,
+                                                             sectionBooks: sectionBooks,
+                                                             userBooks: userBooks,
+                                                             baseUrl: req.baseUrl,
+                                                             platform: req.platform))
     }
     
     @Sendable
@@ -128,38 +151,102 @@ struct AppSectionController: RouteCollection {
         
         let books = try await Book.query(on: req.db)
             .filter(\.$author.$id == author.requireID())
+            .filter(\.$publishDate < Date.now)
+            .sort(\.$publishDate)
+            .with(\.$user)
             .with(\.$section)
+            .with(\.$roles) { role in
+                role.with(\.$author)
+            }
             .all()
-            .map { $0.toShortDTO(authorFirstName: author.firstName, authorLastName: author.lastName) }
+            .map { $0.toShortDTO() }
         
         let template = "author"
         
         return try await req.view.render(template, AuthorModel(author: author.toDTO(),
+                                                               books: books,
                                                                baseUrl: req.baseUrl,
-                                                               books: books ))
+                                                               platform: req.platform))
     }
+    
+    @Sendable
+    func player(req: Request) async throws -> View {
+        guard let bookIdStr = req.parameters.get("bookId"),
+              let bookId = UUID(uuidString: bookIdStr) else {
+            throw Abort(.badRequest)
+        }
+                
+        let book = try await Book.query(on: req.db)
+            .filter(\.$id == bookId)
+            .with(\.$user)
+            .with(\.$author)
+            .with(\.$section)
+            .with(\.$roles) { role in
+                role.with(\.$author)
+            }
+            .with(\.$chapters)
+            .first()
+        
+        guard let bookDTO = book?.toDetailsDTO() else {
+            throw Abort(.notFound)
+        }
+        
+        let template = "player"
+        return try await req.view.render(template,
+                                         PlayerModel(book: bookDTO,
+                                                     baseUrl: req.baseUrl,
+                                                     platform: req.platform))
+    }
+
+    @Sendable
+    func page(req: Request) async throws -> View {
+        guard let template = req.parameters.get("template"),
+              template.starts(with: "page-") else {
+            throw Abort(.badRequest)
+        }
+        
+        return try await req.view.render(template, PageModel(baseUrl: req.baseUrl,
+                                                             platform: req.platform ))
+    }
+
 }
 
-fileprivate struct PageModel: Codable {
+
+fileprivate struct SectionModel: Codable {
     let title: String
     let description: String
-    let baseUrl: String
     let sections: [SectionDTO]
     let books: [BookShortDTO]
+    let baseUrl: String
+    let platform: String
+}
+
+fileprivate struct BookModel: Codable {
+    let book: BookDetailsDTO
+    let sectionBooks: [BookShortDTO]
+    let userBooks: [BookShortDTO]
+    let baseUrl: String
+    let platform: String
+}
+
+fileprivate struct AuthorModel: Codable {
+    let author: AuthorDTO
+    let books: [BookShortDTO]
+    let baseUrl: String
+    let platform: String
 }
 
 fileprivate struct PlayerModel: Codable {
     let book: BookDetailsDTO
     let baseUrl: String
-    let sectionBooks: [BookShortDTO]
-    let authorBooks: [BookShortDTO]
+    let platform: String
 }
 
-fileprivate struct AuthorModel: Codable {
-    let author: AuthorDTO
+fileprivate struct PageModel: Codable {
     let baseUrl: String
-    let books: [BookShortDTO]
+    let platform: String
 }
+
 
 
 
@@ -176,5 +263,9 @@ extension Request {
         let host = configuration.hostname
         let port = configuration.port
         return "\(scheme)://\(host):\(port)"
+    }
+    
+    var platform: String {
+        return headers.first(name: "X-Platform") ?? "any"
     }
 }

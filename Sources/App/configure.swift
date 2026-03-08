@@ -26,6 +26,9 @@ public func configure(_ app: Application) async throws {
     app.migrations.add(CreateBook())
     app.migrations.add(UpdateBook1())
     app.migrations.add(UpdateSection1())
+    app.migrations.add(CreateUser())
+    app.migrations.add(CreateRole())
+    app.migrations.add(CreateChapter())
 
     app.views.use(.leaf)
     

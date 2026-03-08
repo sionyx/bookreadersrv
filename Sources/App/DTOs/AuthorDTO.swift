@@ -28,3 +28,16 @@ struct AuthorDTO: Content {
         return model
     }
 }
+
+extension Author {
+    func toDTO() -> AuthorDTO {
+        .init(
+            id: self.id,
+            firstName: self.$firstName.value,
+            lastName: self.$lastName.value,
+            photoUrl: self.$photoUrl.value,
+            link: self.$link.value,
+            description: self.$description.value
+        )
+    }
+}

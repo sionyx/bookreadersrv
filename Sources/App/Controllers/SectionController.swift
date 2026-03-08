@@ -40,13 +40,14 @@ struct SectionController: RouteCollection {
         
         let books = try await Book.query(on: req.db)
             .filter(\.$section.$id == section.requireID())
+            .sort(\.$publishDate)
             .with(\.$author)
-            .with(\.$section)
+            .with(\.$user)        
             .all()
         
         return SectionContent(section: section.toDTO(),
                               sections: subsections.map { $0.toDTO() },
-                              books: books.map { $0.toShortDTO() })
+                              books: books.map { $0.toShortDTO(sectionTitle: section.title) })
     }
 
     @Sendable
@@ -117,7 +118,7 @@ struct SectionController: RouteCollection {
         }
 
         try await section.delete(on: req.db)
-        return .noContent
+        return .ok
     }
 }
 

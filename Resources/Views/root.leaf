@@ -17,6 +17,9 @@
             ],
             "height": {
                 "type": "match_parent"
+            },
+            "width": {
+                "type": "match_parent"                
             }
         },
         "block": {
@@ -153,12 +156,7 @@
             "text_color": "#FFFFFF",
             "font_size": 20,
             "line_height": 24,
-            "font_weight": "bold",
-            "paddings": {
-                "left": 24,
-                "right": 24,
-                "bottom": 16
-            }
+            "font_weight": "bold"
         },
         "subtitle": {
             "type": "text",
@@ -169,36 +167,10 @@
                 "left": 24,
                 "right": 24
             }
-        },
-        "back_button": {
-            "type": "image",
-            "scale": "fit",
-            "image_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/controls/arrow-left-circle-fill.png",
-            "aspect": {
-                "ratio": 1
-            },
-            "width": {
-                "type": "fixed",
-                "value": 48
-            }, 
-            "paddings": {
-                "top": 12,
-                "bottom": 12,
-                "left": 12,
-                "right": 12
-            },
-            "tint_color": "#ffffff"
         }
     },
     "card": {
         "log_id": "books_card",
-        "variables": [
-            {
-                "name": "default_cover_url",
-                "type": "string",
-                "value": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/images/bookreader_96.png"
-            }
-        ],
         "states": [
             {
                 "state_id": 0,
@@ -217,36 +189,27 @@
                             },
                             "items": [
                                 {
-                                  "type": "back_button",
-                                  "alignment_horizontal": "left",
-                                  "alignment_vertical": "center",
-                                  "margins": {
-                                    "left": 8,
-                                    "right": 0
-                                  },
-                                  "actions": [
-                                      {
-                                          "log_id": "dismiss",
-                                          "url": "navigate://dismiss"
-                                      }
-                                  ]
-                                },
-                                {
                                     "type": "text",
                                     "font_size": 24,
                                     "text_alignment_horizontal": "left",
                                     "alignment_horizontal": "center",
                                     "text_color": "#FFFFFF",
-                                    "text": "#(title)",
+                                    "text": "Вслух",
                                     "width": {
                                         "type": "match_parent"
                                     },
                                     "margins": {
                                         "top": 8,
                                         "bottom": 4,
-                                        "left": 8,
+                                        "left": 16,
                                         "right": 16
-                                    }
+                                    },
+                                    "_actions": [
+                                        {
+                                            "log_id": "button_pressed",
+                                            "url": "navigate://page?title=&url=#(baseUrl)/app/page/page-test"
+                                        }
+                                    ]
                                 }
                             ]
                         },
@@ -267,34 +230,102 @@
                             },
                             "item_spacing": 16,
                             "items": [
-#for(section in sections):
                                 {
-                                    "type": "section_block",
-                                    "book_author": "",
-                                    "book_title": "#(section.title)",
-                                    "cover_url": "@{ '#(section.coverUrl)' != '' ? '#(section.coverUrl)' : default_cover_url}",
-                                    "actions": [
-                                        {
-                                            "log_id": "button_pressed",
-                                            "url": "navigate://page?title=#(section.title)&url=#(baseUrl)/app/sections/#(section.name)"
-                                        }
-                                    ]
+                                    "type": "title",
+                                    "text": "Аудиокниги"
                                 },
-#endfor
-#for(book in books):
                                 {
                                     "type": "book_block",
-                                    "book_author": "#(book.author)",
-                                    "book_title": "#(book.title)",
-                                    "cover_url": "@{ '#(book.previewUrl)' != '' ? '#(book.previewUrl)' : default_cover_url}",
+                                    "book_author": "Анжей Сапковский",
+                                    "book_title": "Ведьмак. Перекресток воронов",
+                                    "cover_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/audiobooks/witcher/witcher_preview.jpg",
                                     "actions": [
                                         {
                                             "log_id": "button_pressed",
-                                            "url": "navigate://page?title=#(book.title)&url=#(baseUrl)/app/books/#(book.id)"
+                                            "url": "navigate://page?title=&url=#(baseUrl)/app/books/E740F417-7352-4F8D-9DAF-A51D6AA98994"
                                         }
                                     ]
                                 },
-#endfor
+                                {
+                                    "type": "book_block",
+                                    "book_author": "Таня Гуревич",
+                                    "book_title": "Цепочка распада",
+                                    "cover_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/audiobooks/cepochka_raspada/cepochka_raspada_mini.jpg",
+                                    "actions": [
+                                        {
+                                            "log_id": "button_pressed",
+                                            "url": "navigate://page?title=&url=#(baseUrl)/app/books/5EA6D77D-95E3-441E-A4C6-C26B10A5C0B6"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "book_block",
+                                    "book_author": "Роберт Шекли",
+                                    "book_title": "Кое-что задаром",
+                                    "cover_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/audiobooks/koe-chto_zadarom/koe-chto_zadarom_mini.jpg",
+                                    "actions": [
+                                        {
+                                            "log_id": "button_pressed",
+                                            "url": "navigate://page?title=&url=#(baseUrl)/app/books/63A78E52-F82C-4281-A031-D889E443A697"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "book_block",
+                                    "book_author": "Перейти в раздел",
+                                    "book_title": "Другие аудиокниги",
+                                    "cover_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/images/bookreader_96.png",
+                                    "actions": [
+                                        {
+                                            "log_id": "button_pressed",
+                                            "url": "navigate://page?title=&url=#(baseUrl)/app/sections/audiobooks"
+                                        }
+                                    ]
+                                },                                
+                                {
+                                    "type": "title",
+                                    "text": "Спектакли"
+                                },
+                                {
+                                    "type": "book_block",
+                                    "book_author": "Эльдар Рязанов",
+                                    "book_title": "Гараж",
+                                    "cover_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/plays/garazh/garazh_preview.jpg",
+                                    "actions": [
+                                        {
+                                            "log_id": "button_pressed",
+                                            "url": "navigate://page?title=&url=#(baseUrl)/app/books/3B11DCE7-3E1C-4FED-9212-DCA2A0401B52"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "book_block",
+                                    "book_author": "Эльдар Рязанов",
+                                    "book_title": "Любовь и голуби",
+                                    "cover_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/plays/lyubovigolubi/lyubovigolubi_preview.png",
+                                    "actions": [
+                                        {
+                                            "log_id": "button_pressed",
+                                            "url": "navigate://page?title=&url=#(baseUrl)/app/books/CF3207C6-220A-490E-9401-CA3CF757B3D7"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "title",
+                                    "text": "Подкасты"
+                                },
+                                {
+                                    "type": "book_block",
+                                    "book_author": "",
+                                    "book_title": "Неидеальный подкаст",
+                                    "cover_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/podcasts/psy/b-three/%D0%B13_preview.png",
+                                    "actions": [
+                                        {
+                                            "log_id": "button_pressed",
+                                            "url": "navigate://page?title=&url=#(baseUrl)/app/authors/12BF57E6-B7BF-4648-9A50-8E1F463D8C20"
+                                        }
+                                    ]
+                                },
                                 {
                                     "type": "separator"
                                 }

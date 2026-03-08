@@ -33,3 +33,19 @@ struct SectionDTO: Content {
         return model
     }
 }
+
+extension Section {
+    func toDTO() -> SectionDTO {
+        .init(
+            id: self.id,
+            parentId: self.$parent.id,
+            name: self.$name.value ?? "",
+            title: self.$title.value ?? "",
+            coverUrl: self.$coverUrl.value,
+            textLink: self.$textLink.value,
+            description: self.$description.value,
+            template: self.$template.value ?? "",
+            bookTemplate: self.bookTemplate ?? ""
+        )
+    }
+}

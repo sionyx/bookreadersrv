@@ -6,7 +6,7 @@ func routes(_ app: Application) throws {
     let corsConfiguration = CORSMiddleware.Configuration(
         allowedOrigin: .all,
         allowedMethods: [.GET, .POST, .PUT, .OPTIONS, .DELETE, .PATCH],
-        allowedHeaders: [.accept, .authorization, .contentType, .origin, .xRequestedWith, .userAgent, .accessControlAllowOrigin]
+        allowedHeaders: [.accept, .authorization, .contentType, .origin, .xRequestedWith, .userAgent, .accessControlAllowOrigin, .init("X-Platform")]
     )
     let cors = CORSMiddleware(configuration: corsConfiguration)
     app.middleware.use(cors, at: .beginning)
@@ -19,6 +19,10 @@ func routes(_ app: Application) throws {
         try api.register(collection: SectionController())
         try api.register(collection: AuthorController())
         try api.register(collection: BookController())
+        try api.register(collection: RoleController())
+        try api.register(collection: UserController())
+        try api.register(collection: ChapterController())
+        try api.register(collection: InfoController())
         try api.register(collection: ViewsController(path: "views", localDirectory: app.directory.viewsDirectory))
     }
 

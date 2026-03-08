@@ -1,0 +1,930 @@
+{
+    "templates": {
+        "page": {
+            "type": "container",
+            "orientation": "vertical",
+            "content_alignment_horizontal": "center",
+            "paddings": {
+                "top": 0,
+                "bottom": 0
+            },
+            "background": [
+                {
+                    "type": "solid",
+                    "color": "#375688"
+                }
+            ],
+            "width": {
+                "type": "match_parent"
+            },
+            "height": {
+                "type": "match_parent"
+            }
+        },
+        "content": {
+            "type": "container",
+            "orientation": "vertical",
+            "content_alignment_horizontal": "center",            
+            "width": {
+                "type": "fixed",
+                "value": "@{screenWidth > 500 ? 500 : screenWidth}"
+            },
+            "height": {
+                "type": "match_parent"
+            }        
+        },
+        "cover_container": {
+            "type": "container",
+            "orientation": "horizontal",
+            "width": {
+                "type": "match_parent"
+            },           
+            "height": {
+                "type": "wrap_content"
+            },
+            "content_alignment_horizontal": "center"
+        },
+        "cover_image": {
+            "type": "image",
+            "$image_url": "image_url",
+            "width": {
+                "type": "match_parent"
+            },
+            "_height": {
+                "type": "wrap_content"
+            },
+            "aspect": {
+                "ratio": 1
+            }, 
+            "background": [
+                {
+                    "type": "solid",
+                    "color": "#375688",
+                    "angle": 270
+                }
+            ],
+            "border": {
+                "stroke": {
+                    "color": "#7f4172bc",
+                    "width": 0
+                },
+                "corners_radius": {
+                    "bottom-left": 30,
+                    "bottom-right": 30,
+                    "top-left": "@{isTablet ? 30 : 0}",
+                    "top-right": "@{isTablet ? 30 : 0}"
+                }
+            }
+        },
+        "title": {
+            "type": "text",
+            "font_size": 20,
+            "line_height": 24,
+            "font_weight": "bold",
+            "text_color": "#FFFFFF",
+            "text_alignment_horizontal": "left",
+            "margins": {
+                "top": 16
+            },
+            "paddings": {
+                "left": 24,
+                "right": 24
+            },
+            "width": {
+                "type": "match_parent"
+            }
+        },
+        "subtitle": {
+            "font_size": 14,
+            "line_height": 20,
+            "type": "text",
+            "text_color": "#a5c6f8",
+            "width": {
+                "type": "match_parent"
+            },
+            "text_alignment_horizontal": "left",
+            "paddings": {
+                "left": 24,
+                "right": 24,
+                "bottom": 16
+            }
+        },
+        "timestamp": {
+            "font_size": 16,
+            "line_height": 48,
+            "type": "text",
+            "text_color": "#a5c6f8",
+            "width": {
+                "type": "match_parent"
+            },
+            "text_alignment_horizontal": "left",
+            "paddings": {
+                "left": 24,
+                "right": 24,
+                "bottom": 16
+            }
+        },
+        "link": {
+            "font_size": 14,
+            "line_height": 22,
+            "type": "text",
+            "width": {
+                "type": "match_parent"
+            },
+            "text_color": "#feca40",
+            "text_alignment_horizontal": "left",
+            "underline": "single",
+            "margins": {
+              "top": 8,
+              "bottom": 8
+            },
+            "paddings": {
+                "left": 24,
+                "right": 24,
+                "top": 12,
+                "bottom": 12
+            },
+            "$text": "link",
+            "actions": [
+                {
+                    "log_id": "next",
+                    "$url": "action"
+                }
+            ]        
+        },
+        "chapter": {
+            "font_size": 14,
+            "line_height": 22,
+            "type": "text",
+            "width": {
+                "type": "match_parent"
+            },
+            "text_color": "#ffffff",
+            "text_alignment_horizontal": "left",
+            "underline": "single",
+            "margins": {
+              "bottom": 8
+            },
+            "paddings": {
+                "left": 24,
+                "right": 24
+            },
+            "actions": [
+                {
+                    "log_id": "chapter",
+                    "$url": "action"
+                },
+                {
+                    "log_id": "chapter play",
+                    "url": "div-action://video?id=audio_player&action=start"
+                }
+            ]        
+        },
+        "description": {
+            "font_size": 14,
+            "line_height": 20,
+            "type": "text",
+            "text_color": "#a5c6f8",
+            "width": {
+                "type": "match_parent"
+            },
+            "text_alignment_horizontal": "left",
+            "paddings": {
+                "left": 24,
+                "right": 24,
+                "bottom": 16
+            }
+        },
+        "control_button": {
+            "type": "image",
+            "scale": "fit",
+            "aspect": {
+                "ratio": 1
+            },
+            "width": {
+                "type": "fixed",
+                "value": 48
+            }, 
+            "tint_color": "#ffffff"
+        },
+        "control_button_mini": {
+            "type": "image",
+            "scale": "fit",
+            "aspect": {
+                "ratio": 1
+            },
+            "width": {
+                "type": "fixed",
+                "value": 48
+            },
+            "paddings": {
+                "left": 12,
+                "right": 12,
+                "bottom": 12,
+                "top": 12
+            }, 
+            "tint_color": "#a5c6f8"
+        },
+        "close_button": {
+            "type": "image",
+            "scale": "fit",
+            "image_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/controls/x-circle-fill.png",
+            "aspect": {
+                "ratio": 1
+            },
+            "width": {
+                "type": "fixed",
+                "value": 48
+            }, 
+            "paddings": {
+                "top": 12,
+                "bottom": 12,
+                "left": 12,
+                "right": 12
+            },
+            "tint_color": "#ffffff"
+        },
+        "control_button_text": {
+            "type": "text",
+            "font_size": 12,
+            "line_height": 48,
+            "text_color": "#a5c6f8",
+            "text_alignment_horizontal": "center",
+            "width": {
+                "type": "fixed",
+                "value": 48
+            },
+            "paddings": {
+                "left": 8,
+                "right": 8
+            }, 
+            "margins": {
+                "left": 8,
+                "right": 8
+            },
+            "border": {
+                "stroke": {
+                    "color": "#a5c6f8",
+                    "width": 0
+                },
+                "corners_radius": {
+                    "bottom-left": 6,
+                    "bottom-right": 6,
+                    "top-left": 6,
+                    "top-right": 6
+                }
+            }
+        },
+        "block": {
+            "type": "container",
+            "orientation": "horizontal",
+            "width": {
+                "type": "match_parent"
+            },
+            "height": {
+                "type": "wrap_content"
+            },
+            "background": [
+                {
+                    "type": "solid",
+                    "color": "#375688"
+                }
+            ],
+            "border": {
+                "corner_radius": 16
+            }
+        }
+    },
+    "card": {
+        "log_id": "sample_card",
+        "variables": [
+            {
+                "name": "video_time",
+                "type": "integer",
+                "value": 0
+            },
+            {
+                "name": "slider_time",
+                "type": "integer",
+                "value": 0
+            },
+            {
+                "name": "video_duraton",
+                "type": "integer",
+                "value": 0
+            },
+            {
+                "name": "video_speed",
+                "type": "number",
+                "value": 1.0
+            },
+            {
+                "name": "default_cover_url",
+                "type": "string",
+                "value": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/images/bookreader_transparent.png"
+            },
+            {
+                "name": "show_speed",
+                "type": "string",
+                "value": "none"
+            },
+            {
+                "name": "show_chapters",
+                "type": "string",
+                "value": "none"
+            },
+            {
+                "name": "controls_block",
+                "type": "string",
+                "value": "visible"
+            },
+            {
+                "name": "speed_block",
+                "type": "string",
+                "value": "invisible"
+            },
+            {
+                "name": "chapter_block",
+                "type": "string",
+                "value": "invisible"
+            },
+            {
+                "name": "chapter_state",
+                "type": "string",
+                "value": ""                
+            }
+        ],
+        "variable_triggers": [
+            {
+                "condition": "@{show_speed == 'show' && controls_block == 'visible'}",
+                "mode": "on_variable",
+                "actions": [
+                    {
+                        "log_id": "update show_speed",
+                        "url": "div-action://set_variable?name=show_speed&value=none"
+                    },
+                    {
+                        "log_id": "update speed_block",
+                        "url": "div-action://set_variable?name=speed_block&value=visible"
+                    },
+                    {
+                        "log_id": "update controls_block",
+                        "url": "div-action://set_variable?name=controls_block&value=invisible"
+                    }
+                ]
+            },
+            {
+                "condition": "@{show_speed == 'show' && controls_block != 'visible'}",
+                "mode": "on_variable",
+                "actions": [
+                    {
+                        "log_id": "update show_speed",
+                        "url": "div-action://set_variable?name=show_speed&value=none"
+                    },
+                    {
+                        "log_id": "update speed_block",
+                        "url": "div-action://set_variable?name=speed_block&value=invisible"
+                    },
+                    {
+                        "log_id": "update controls_block",
+                        "url": "div-action://set_variable?name=controls_block&value=visible"
+                    }
+                ]
+            },
+            {
+                "condition": "@{show_chapters == 'show' && chapter_block == 'invisible'}",
+                "mode": "on_variable",
+                "actions": [
+                    {
+                        "log_id": "update show_chapters",
+                        "url": "div-action://set_variable?name=show_chapters&value=none"
+                    },
+                    {
+                        "log_id": "update speed_block",
+                        "url": "div-action://set_variable?name=chapter_block&value=visible"
+                    },
+                    {
+                        "log_id": "update speed_block",
+                        "url": "div-action://set_state?state_id=0/chapters/visible"
+                    }
+                ]
+            },
+            {
+                "condition": "@{show_chapters == 'show' && chapter_block == 'visible'}",
+                "mode": "on_variable",
+                "actions": [
+                    {
+                        "log_id": "update show_chapters",
+                        "url": "div-action://set_variable?name=show_chapters&value=none"
+                    },
+                    {
+                        "log_id": "update speed_block",
+                        "url": "div-action://set_variable?name=chapter_block&value=invisible"
+                    },
+                    {
+                        "log_id": "update speed_block",
+                        "url": "div-action://set_state?state_id=0/chapters/empty"
+                    }
+                ]
+            },
+            {
+                "condition": "@{slider_time >= 0}",
+                "mode": "on_variable",
+                "actions": [
+                    {
+                        "log_id": "seek",
+                        "url": "div-action://set_variable?name=video_time&value=@{slider_time}"
+                    }
+                ]
+            }            
+        ],
+        "states": [
+            {
+                "state_id": 0,
+                "div": {
+                    "type": "page",
+                    "items": [
+                        {
+                    "type": "content",
+                    "items": [
+                        {
+                            "type": "cover_container",
+                            "orientation": "overlap",
+                            "items": [
+                                {
+                                    "type": "cover_image",
+                                    "image_url": "@{ '#(book.coverUrl)' != '' ? '#(book.coverUrl)' : default_cover_url}",
+                                    "margins": {
+                                        "bottom": 24
+                                    }
+                                },
+                                {
+                                  "type": "close_button",
+                                  "alignment_horizontal": "right",
+                                  "alignment_vertical": "top",
+                                  "margins": {
+                                    "top": "@{safeAreaTop}",
+                                    "right": 8
+                                  },
+                                  "actions": [
+                                      {
+                                          "log_id": "dismiss",
+                                          "url": "navigate://dismiss"
+                                      }
+                                  ]
+                                },
+                                {
+                                    "type": "state",
+                                    "div_id": "control",
+                                    "width": {
+                                        "type": "wrap_content"
+                                    },
+                                    "alignment_horizontal": "center",
+                                    "alignment_vertical": "bottom",
+                                    "states": [
+                                        {
+                                            "state_id": "paused",
+                                            "div": {
+                                                "type": "control_button",
+                                                "image_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/controls/play-circle-fill.png",
+                                                "actions": [
+                                                    {
+                                                        "log_id": "play",
+                                                        "url": "div-action://video?id=audio_player&action=start"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "state_id": "playing",
+                                            "div": {
+                                                "type": "control_button",
+                                                "image_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/controls/pause-circle-fill.png",
+                                                "actions": [
+                                                    {
+                                                        "log_id": "pause",
+                                                        "url": "div-action://video?id=audio_player&action=pause"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "title",
+                            "text": "#(book.title)"
+                        },
+                        {
+                            "type": "subtitle",
+                            "text": "#(book.user.login)"
+                        },
+
+
+
+
+
+                        
+
+                                {
+                                    "type": "state",
+                                    "div_id": "chapters_players",
+                                    "width": {
+                                        "type": "wrap_content"
+                                    },
+                                    "alignment_horizontal": "center",
+                                    "alignment_vertical": "bottom",
+                                    "state_id_variable": "chapter_state",
+                                    "states": [
+#for(chapter in book.chapters):
+                    {
+                        "state_id": "chapter_#(chapter.index)",
+                        "div": {
+
+                            "type": "video",
+                            "id": "audio_player",
+                            "video_sources": [
+                                {
+                                    "type": "video_source",
+                                    "url": "#(chapter.mediaUrl)",
+                                    "mime_type": "audio/mp3"
+                                }
+                            ],
+                            "player_settings_payload": {
+                                "cover": "#(book.coverUrl)",
+                                "artist": "#(book.user.login)",
+                                "title": "#(book.title) - #(book.title)"
+                            },
+                            "preload_required": true,
+                            "repeatable": false,
+                            "autostart": false,
+                            "muted": false,
+                            "elapsed_time_variable": "video_time",
+                            "height": {
+                                "type": "fixed",
+                                "value": 0
+                            },
+                            "background": [
+                                {
+                                    "type": "solid",
+                                    "color": "#000000"
+                                }
+                            ],
+                            "disappear_actions": [
+                            ],
+                            "buffering_actions":[],
+                            "fatal_actions": [],
+                            "pause_actions": [
+                                {
+                                    "log_id": "on_pause",
+                                    "url": "div-action://set_state?state_id=0/control/paused"
+                                }
+                            ],
+                            "resume_actions":[
+                                {
+                                    "log_id": "on_play",
+                                    "url": "div-action://set_state?state_id=0/control/playing"
+                                }
+                            ],
+                            "end_actions":[
+#if(chapter.index < count(book.chapters) - 1):
+                                {
+                                    "log_id": "play next",
+                                    "url": "div-action://set_state?state_id=0/chapters_players/chapter_@{#(chapter.index) + 1}"
+                                },
+                                {
+                                    "log_id": "start",
+                                    "url": "div-action://video?id=audio_player&action=start"
+                                }
+#else:
+                                {
+                                    "log_id": "play next",
+                                    "url": "div-action://set_state?state_id=0/chapters_players/chapter_0"
+                                },
+                                {
+                                    "log_id": "stop",
+                                    "url": "div-action://video?id=audio_player&action=pause"
+                                }
+#endif
+                            ]
+                        }
+                    },
+
+#endfor
+                    {
+                        "state_id": "chapter_end",
+                        "div": {
+                        }
+                    }
+                                        
+                                    ]
+                                },
+                        
+
+
+
+
+
+                        
+                        {
+                            "type": "gallery",
+                            "orientation": "vertical",
+                            "width": {
+                                "type": "match_parent"
+                            },
+                            "height": {
+                                "type": "match_parent"
+                            },
+                            "paddings": {
+                                "bottom": 24
+                            },
+                            "item_spacing": 0,
+                            "items": [
+                                {
+                                    "type": "container",
+                                    "orientation": "overlap",
+                                    "width": {
+                                        "type": "match_parent"
+                                    },
+                                    "height": {
+                                        "type": "wrap_content"
+                                    },
+                                    "items": [
+                                        {
+                                            "type": "container",
+                                            "orientation": "horizontal",
+                                            "width": {
+                                                "type": "match_parent"
+                                            },
+                                            "height": {
+                                                "type": "wrap_content"
+                                            },
+                                            "content_alignment_horizontal": "center",
+                                            "items": [
+                                                {
+                                                    "type": "control_button_mini",
+                                                    "image_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/controls/rewind-fill_mini.png",
+                                                    "margins": {
+                                                        "left": 10,
+                                                        "right": 10
+                                                    },
+                                                    "actions": [
+                                                        {
+                                                            "log_id": "rewind",
+                                                            "url": "div-action://set_variable?name=video_time&value=@{video_time-5000}"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "timestamp",
+                                                    "width": {
+                                                        "type": "wrap_content"
+                                                    },
+                                                    "text_alignment_horizontal": "center",
+                                                    "text": "@{getIntervalHours(video_time) > 0 ? getIntervalHours(video_time) : ''}@{getIntervalHours(video_time) > 0 ? ':' : ''}@{getIntervalHours(video_time) > 0 && getIntervalMinutes(video_time) < 10 ? '0' : ''}@{getIntervalMinutes(video_time)}:@{getIntervalSeconds(video_time) < 10 ? '0' : ''}@{getIntervalSeconds(video_time)}"
+                                                },
+                                                {
+                                                    "type": "control_button_mini",
+                                                    "image_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/controls/fast-forward-fill_mini.png",
+                                                    "margins": {
+                                                        "left": 10,
+                                                        "right": 10
+                                                    },
+                                                    "actions": [
+                                                        {
+                                                            "log_id": "forward",
+                                                            "url": "div-action://set_variable?name=video_time&value=@{video_time+5000}"
+                                                        }
+                                                    ]
+                                                },
+#if(platform!="web"):                                            
+                                                {
+                                                    "type": "control_button_text",
+                                                    "alignment_horizontal": "center",
+                                                    "text": "x@{video_speed}",
+                                                    "actions": [
+                                                        {
+                                                            "log_id": "set_state",
+                                                            "url": "div-action://set_variable?name=show_speed&value=show"
+                                                        }
+                                                    ]
+                                                },
+#endif                                                
+                                                {}
+                                            ],
+                                            "id": "controls_block",
+                                            "visibility": "@{controls_block}",
+                                            "transition_out": {
+                                                "type": "slide",
+                                                "duration": 300,
+                                                "edge": "left"
+                                            },
+                                            "transition_in": {
+                                                "type": "slide",
+                                                "duration": 300,
+                                                "edge": "left"
+                                            }
+                                        },
+                                        {
+                                            "type": "container",
+                                            "orientation": "horizontal",
+                                            "width": {
+                                                "type": "match_parent"
+                                            },
+                                            "height": {
+                                                "type": "wrap_content"
+                                            },
+                                            "content_alignment_horizontal": "center",
+                                            "items": [
+                                                {
+                                                    "type": "control_button_text",
+                                                    "alignment_horizontal": "center",
+                                                    "text": "x1.0",
+                                                    "actions": [
+                                                        {
+                                                            "log_id": "video_speed set rate",
+                                                            "url": "player://playback?rate=1.0"
+                                                        },
+                                                        {
+                                                            "log_id": "video_speed set_variable show_speed show",
+                                                            "url": "div-action://set_variable?name=video_speed&value=1.0"
+                                                        },
+                                                        {
+                                                            "log_id": "set_state",
+                                                            "url": "div-action://set_variable?name=show_speed&value=show"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "control_button_text",
+                                                    "alignment_horizontal": "center",
+                                                    "text": "x1.25",
+                                                    "actions": [
+                                                        {
+                                                            "log_id": "video_speed set rate",
+                                                            "url": "player://playback?rate=1.25"
+                                                        },
+                                                        {
+                                                            "log_id": "video_speed set_variable show_speed show",
+                                                            "url": "div-action://set_variable?name=video_speed&value=1.25"
+                                                        },
+                                                        {
+                                                            "log_id": "set_state",
+                                                            "url": "div-action://set_variable?name=show_speed&value=show"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "control_button_text",
+                                                    "alignment_horizontal": "center",
+                                                    "text": "x1.5",
+                                                    "actions": [
+                                                        {
+                                                            "log_id": "video_speed set rate",
+                                                            "url": "player://playback?rate=1.5"
+                                                        },
+                                                        {
+                                                            "log_id": "video_speed set_variable show_speed show",
+                                                            "url": "div-action://set_variable?name=video_speed&value=1.5"
+                                                        },
+                                                        {
+                                                            "log_id": "set_variable show_speed show",
+                                                            "url": "div-action://set_variable?name=show_speed&value=show"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "control_button_mini",
+                                                    "image_url": "https://bookreader.hb.ru-msk.vkcloud-storage.ru/controls/x-circle-fill.png",
+                                                    "margins": {
+                                                        "left": 10,
+                                                        "right": 10
+                                                    },
+                                                    "actions": [
+                                                        {
+                                                            "log_id": "set_variable show_speed hide",
+                                                            "url": "div-action://set_variable?name=show_speed&value=show"
+                                                        }
+                                                    ]
+                                                }
+                                            ],
+                                            "id": "speed_block",
+                                            "visibility": "@{speed_block}",
+                                            "transition_out": {
+                                                "type": "slide",
+                                                "duration": 300,
+                                                "edge": "right"
+                                            },
+                                            "transition_in": {
+                                                "type": "slide",
+                                                "duration": 300,
+                                                "edge": "right"
+                                            }
+                                        }
+                                    ]
+                                },
+
+#if(platform=="web"):                                            
+                                {
+                                    "_type": "separator",
+                                    "type": "slider",
+                                    "visibility": "@{video_duraton > 0 && slider_time >= 0 ? 'visible' : 'invisible'}",
+                                    "width": {
+                                        "type": "match_parent"
+                                    },
+                                    "margins": {
+                                        "top": 16,
+                                        "left": 12,
+                                        "right": 12
+                                    },
+                                    "is_enabled": true,
+                                    "max_value": "@{video_duraton * 1000}",
+                                    "min_value": -1,
+                                    "thumb_value_variable": "video_time",
+                                    "_ranges": "@{ranges}",
+                                    "thumb_style": {
+                                        "type": "shape_drawable",
+                                        "color": "#FFCC00",
+                                        "stroke": {
+                                            "color": "#ffffff",
+                                            "width": 3
+                                        },
+                                        "shape": {
+                                            "type": "rounded_rectangle",
+                                            "item_height": {
+                                                "type": "fixed",
+                                                "value": 32
+                                            },
+                                            "item_width": {
+                                                "type": "fixed",
+                                                "value": 32
+                                            },
+                                            "corner_radius": {
+                                                "type": "fixed",
+                                                "value": 100
+                                            }
+                                        }
+                                    },
+                                    "track_active_style": {
+                                        "type": "shape_drawable",
+                                        "color": "#FFCC00",
+                                        "shape": {
+                                            "type": "rounded_rectangle",
+                                            "item_height": {
+                                                "type": "fixed",
+                                                "value": 6
+                                            }
+                                        }
+                                    },
+                                    "track_inactive_style": {
+                                        "type": "shape_drawable",
+                                        "color": "#20000000",
+                                        "shape": {
+                                            "type": "rounded_rectangle",
+                                            "item_height": {
+                                                "type": "fixed",
+                                                "value": 6
+                                            }
+                                        }
+                                    }
+                                },
+#endif
+
+#if(count(book.chapters) > 1):
+#for(chapter in book.chapters):
+                                {
+                                    "type": "chapter",
+                                    "text": "#(chapter.title)",
+                                    "font_weight": "@{(chapter_state == 'chapter_#(chapter.index)') ? 'bold' : 'regular'}",
+                                    "actions": [
+                                        {
+                                            "log_id": "pause",
+                                            "url": "div-action://video?id=audio_player&action=pause"
+                                        },                              
+                                        {
+                                            "log_id": "chapter play",
+                                            "url": "div-action://set_state?state_id=0/chapters_players/chapter_#(chapter.index)"
+                                        },
+                                        {
+                                            "log_id": "start",
+                                            "url": "div-action://video?id=audio_player&action=start"
+                                        }
+                                    ]                                     
+                                },
+#endfor
+#endif
+                                {
+                                    "type": "separator",
+                                    "visibility": "invisible"
+                                }                                
+                            ]
+                        }
+                    ]
+                }
+                    ]
+                }
+            }
+        ]
+    }
+}

@@ -13,25 +13,25 @@ struct BookDTO: Content {
     var createDate: TimeInterval?
     var updateDate: TimeInterval?
     var deleteDate: TimeInterval?
+    var userId: User.IDValue
     var authorId: Author.IDValue
     var sectionId: Section.IDValue
     var title: String
-    var duration: Int32
-    var mediaUrl: String
     var previewUrl: String
     var coverUrl: String
     var textLink: String
     var description: String
     var publishDate: TimeInterval
     var template: String
+    var roles: [RoleDTO]?
+    var chapters: [ChapterDTO]?
 
     func toModel() -> Book {
         let model = Book(id: self.id,
+                         userID: self.userId,
                          authorID: self.authorId,
                          sectionID: self.sectionId,
                          title: self.title,
-                         duration: self.duration,
-                         mediaUrl: self.mediaUrl,
                          previewUrl: self.previewUrl,
                          coverUrl: self.coverUrl,
                          textLink: self.textLink,
@@ -45,7 +45,7 @@ struct BookDTO: Content {
 
 struct BookShortDTO: Content {
     var id: UUID?
-    var author: String
+    var user: String
     var section: String
     var title: String
     var previewUrl: String
@@ -53,20 +53,67 @@ struct BookShortDTO: Content {
 
 struct BookDetailsDTO: Content {
     var id: UUID?
-    var authorId: UUID?
-    var authorFirstName: String
-    var authorLastName: String
-    var authorPhoto: String
-    var sectionTitle: String
-    var sectionName: String
-    var sectionCover: String
+    var user: UserDTO
+    var section: SectionDTO
     var title: String
-    var duration: Int32
-    var mediaUrl: String
     var previewUrl: String
     var coverUrl: String
-    var textLink: String
-    var description: String
+    var textLink: String?
+    var description: String?
     var publishDate: TimeInterval
     var template: String
+    var roles: [RoleDTO]
+    var chapters: [ChapterDTO]
+}
+
+
+
+extension Book {
+    func toDTO() -> BookDTO {
+        BookDTO(
+            id: self.id,
+            createDate: self.createDate?.timeIntervalSince1970,
+            updateDate: self.updateDate?.timeIntervalSince1970,
+            deleteDate: self.deleteDate?.timeIntervalSince1970,
+            userId: self.$user.id,
+            authorId: self.$author.id,
+            sectionId: self.$section.id,
+            title: self.$title.value ?? "",
+            previewUrl: self.previewUrl ?? "",
+            coverUrl: self.$coverUrl.value ?? "",
+            textLink: self.$textLink.value ?? "",
+            description: self.$description.value ?? "",
+            publishDate: self.publishDate?.timeIntervalSince1970 ?? 0,
+            template: self.template ?? "",
+            roles: self.roles.map { $0.toDTO() },
+            chapters: self.chapters.enumerated().map { $1.toDTO($0) }
+        )
+    }
+    
+    func toShortDTO(authorFirstName: String? = nil, authorLastName: String? = nil, sectionTitle: String? = nil) -> BookShortDTO {
+        BookShortDTO(
+            id: self.id,
+            user: self.user.login,
+            section: sectionTitle ?? self.section.title,
+            title: self.title,
+            previewUrl: self.previewUrl ?? ""
+        )
+    }
+    
+    func toDetailsDTO() -> BookDetailsDTO {
+        BookDetailsDTO(
+            id: self.id,
+            user: self.user.toDTO(),
+            section: self.section.toDTO(),
+            title: self.$title.value ?? "",
+            previewUrl: self.previewUrl ?? "",
+            coverUrl: self.$coverUrl.value ?? "",
+            textLink: self.$textLink.value?.nilIfEmpty(),
+            description: self.$description.value?.nilIfEmpty(),
+            publishDate: self.publishDate?.timeIntervalSince1970 ?? 0,
+            template: self.template ?? "",
+            roles: self.roles.map { $0.toDTO() },
+            chapters: self.chapters.enumerated().map { $1.toDTO($0) }
+        )
+    }
 }

@@ -18,8 +18,12 @@ struct AuthorController: RouteCollection {
     }
 
     @Sendable
-    func index(req: Request) async throws -> [AuthorDTO] {
-        try await Author.query(on: req.db).all().map { $0.toDTO() }
+    func index(req: Request) async throws -> Page<AuthorDTO> {
+        try await Author.query(on: req.db)
+            .sort(\.$lastName)
+            .sort(\.$firstName)
+            .paginate(for: req)
+            .map { $0.toDTO() }
     }
     
     @Sendable
@@ -32,7 +36,7 @@ struct AuthorController: RouteCollection {
     }
 
     @Sendable
-    func search(req: Request) async throws -> [AuthorDTO] {
+    func search(req: Request) async throws -> Page<AuthorDTO> {
         // если не работает case insensitive, нужно выполнить команду
         // update pg_database set datcollate='ru_RU.UTF-8', datctype='ru_RU.UTF-8' where datname='YOUR_DATABASE_NAME';
         // https://stackoverflow.com/questions/56559216/search-is-not-working-with-lowercase-like-for-russian-characters
@@ -42,15 +46,26 @@ struct AuthorController: RouteCollection {
             throw Abort(.badRequest)
         }
         
-        return try await Author
-            .query(on: req.db)
-            .group(.or) { group in
-                group
-                    .filter(\.$firstName, .custom("ilike"), "%\(name)%")
-                    .filter(\.$lastName, .custom("ilike"), "%\(name)%")
-            }
-            .all()
-            .map { $0.toDTO() }
+        if name.isEmpty {
+            return try await Author
+                .query(on: req.db)
+                //.sort(\.$updateDate)
+                .paginate(for: req)
+                .map { $0.toDTO() }
+        }
+        else {
+            return try await Author
+                .query(on: req.db)
+                .group(.or) { group in
+                    group
+                        .filter(\.$firstName, .custom("ilike"), "%\(name)%")
+                        .filter(\.$lastName, .custom("ilike"), "%\(name)%")
+                }
+                .sort(\.$lastName)
+                .sort(\.$firstName)
+                .paginate(for: req)
+                .map { $0.toDTO() }
+        }
     }
 
     @Sendable
@@ -84,7 +99,7 @@ struct AuthorController: RouteCollection {
         }
 
         try await author.delete(on: req.db)
-        return .noContent
+        return .ok
     }
 }
 

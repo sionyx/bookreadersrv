@@ -29,6 +29,9 @@ final class Author: Model, @unchecked Sendable {
     @Field(key: "description")
     var description: String
 
+    @Siblings(through: Role.self, from: \.$author, to: \.$book)
+    var books: [Book]
+    
     init() { }
 
     init(id: UUID? = nil, firstName: String, lastName: String, photoUrl: String? = nil, link: String? = nil, description: String? = nil) {
@@ -38,16 +41,5 @@ final class Author: Model, @unchecked Sendable {
         self.photoUrl = photoUrl ?? ""
         self.link = link ?? ""
         self.description = description ?? ""
-    }
-    
-    func toDTO() -> AuthorDTO {
-        .init(
-            id: self.id,
-            firstName: self.$firstName.value,
-            lastName: self.$lastName.value,
-            photoUrl: self.$photoUrl.value,
-            link: self.$link.value,
-            description: self.$description.value
-        )
     }
 }
