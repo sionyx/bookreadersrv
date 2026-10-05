@@ -57,6 +57,7 @@ RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
     && apt-get -q dist-upgrade -y \
     && apt-get -q install -y \
       libjemalloc2 \
+      imagemagick \
       ca-certificates \
       tzdata \
 # If your app or its dependencies import FoundationNetworking, also install `libcurl4`.
@@ -81,6 +82,7 @@ RUN chmod -R a+w ./Resources;
 ENV SWIFT_BACKTRACE=enable=yes,sanitize=yes,threads=all,images=all,interactive=no,swift-backtrace=./swift-backtrace-static
 
 # Ensure all further commands run as the vapor user
+RUN mkdir -p /app/.media-tmp && chown vapor:vapor /app/.media-tmp
 USER vapor:vapor
 
 # Let Docker bind to port 8080

@@ -31,6 +31,9 @@ final class Section: Model, @unchecked Sendable {
     @Field(key: "cover_url")
     var coverUrl: String
 
+    @OptionalField(key: "preview_url")
+    var previewUrl: String?
+
     @Field(key: "text_link")
     var textLink: String
 

@@ -7,6 +7,7 @@ let package = Package(
        .macOS(.v13)
     ],
     dependencies: [
+        .package(url: "https://github.com/soto-project/soto.git", from: "7.0.0"),
         // 💧 A server-side Swift web framework.
         .package(url: "https://github.com/vapor/vapor.git", from: "4.99.3"),
         // 🗄 An ORM for SQL and NoSQL databases.
@@ -16,12 +17,16 @@ let package = Package(
         // 🍃 An expressive, performant, and extensible templating language built for Swift.
         .package(url: "https://github.com/vapor/leaf.git", from: "4.3.0"),
         // 🔵 Non-blocking, event-driven networking for Swift. Used for custom executors
-        .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
+        // Keep dependencies compatible with the Swift 6.0 Docker build image.
+        .package(url: "https://github.com/apple/swift-nio.git", "2.77.0"..<"2.78.0"),
+        .package(url: "https://github.com/apple/swift-system.git", "1.4.0"..<"1.5.0"),
+        .package(url: "https://github.com/apple/swift-distributed-tracing.git", "1.0.1"..<"1.5.0"),
     ],
     targets: [
         .executableTarget(
             name: "App",
             dependencies: [
+                .product(name: "SotoS3", package: "soto"),
                 .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
                 .product(name: "Leaf", package: "leaf"),

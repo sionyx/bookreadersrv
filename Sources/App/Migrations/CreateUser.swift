@@ -23,11 +23,17 @@ struct CreateUser: AsyncMigration {
             .unique(on: "login")
             .create()
         
-        let user = User(id: UUID.empty,
-                        login: "unknown",
-                        pass: "")
-        try await user.save(on: database)
-        
+        // Insert only the fields available at this migration stage. Later migrations
+        // add fields to User, so saving the current model here would include them.
+        try await User.query(on: database)
+            .set(\.$id, to: UUID.empty)
+            .set(\.$login, to: "unknown")
+            .set(\.$pass, to: "")
+            .set(\.$photoUrl, to: "")
+            .set(\.$link, to: "")
+            .set(\.$description, to: "")
+            .create()
+
         try await database.schema(Book.schema)
             .field("user_id", .uuid, .required, .sql(.default(UUID.empty.uuidString)))
             .update()

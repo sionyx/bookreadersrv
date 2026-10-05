@@ -16,6 +16,7 @@ func routes(_ app: Application) throws {
     }
     
     try app.group("api") { api in
+        try api.register(collection: MediaController())
         try api.register(collection: SectionController())
         try api.register(collection: AuthorController())
         try api.register(collection: BookController())

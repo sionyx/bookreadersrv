@@ -80,7 +80,9 @@ struct UserController: RouteCollection {
         }
         let updatedUser = try req.content.decode(UserDTO.self)
         user.login = updatedUser.login ?? ""
-        user.photoUrl = updatedUser.photoUrl ?? ""
+        // Renaming without media fields keeps the existing S3 links.
+        if let url = updatedUser.photoUrl { user.photoUrl = url }
+        if let url = updatedUser.previewUrl { user.previewUrl = url }
         user.link = updatedUser.link ?? ""
         user.description = updatedUser.description ?? ""
         if let pass = updatedUser.pass,

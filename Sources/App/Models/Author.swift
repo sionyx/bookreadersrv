@@ -23,6 +23,9 @@ final class Author: Model, @unchecked Sendable {
     @Field(key: "photo_url")
     var photoUrl: String
     
+    @OptionalField(key: "preview_url")
+    var previewUrl: String?
+
     @Field(key: "link")
     var link: String
 

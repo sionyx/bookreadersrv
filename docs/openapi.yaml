@@ -7,6 +7,9 @@ info:
 
     JSON API доступен под префиксом `/api`, а пользовательские HTML-страницы —
     под `/app`. Аутентификация и авторизация в текущей реализации не подключены.
+    Медиаоперации не требуют отдельного токена; при размещении доступ к ним
+    должен обеспечиваться авторизацией админки. Файлы передаются в бинарном
+    теле запроса, синхронно сохраняются в S3, затем обновляются ссылки в базе.
 
     Поля `publishDate` в DTO книги и главы передаются как Unix time в секундах.
     Поля `createDate`, `updateDate` и `deleteDate` типа Swift `Date` кодируются
@@ -36,6 +39,584 @@ tags:
     description: HTML-страницы приложения
 
 paths:
+  /api/authors/{authorID}/image:
+    parameters:
+      - $ref: '#/components/parameters/AuthorID'
+    post:
+      tags: [Authors]
+      operationId: uploadAuthorImage
+      summary: Загрузить или заменить изображение автора
+      description: |
+        Бинарное тело запроса содержит один файл, без multipart-обёртки.
+        JPEG/PNG/WebP до 20971520 байт (20 MiB). Базовое изображение — PNG,
+        максимум 1024 px по большой стороне без увеличения исходника.
+        Превью — центральный квадрат базового изображения, 96×96 px,
+        JPEG quality 80, белый фон вместо прозрачности. Вес 3–4 КБ ориентировочный.
+        Обрабатывается первый кадр; ориентация EXIF учитывается, метаданные удаляются.
+        Предел исходного изображения: 100 мегапикселей и 20000 px по стороне.
+        Ответ возвращается после загрузки в S3 и обновления базы.
+        Замена использует текущие имена сущностей и удаляет предыдущие объекты
+        по сохранённым в базе ссылкам. Простое переименование не перемещает файлы.
+        Медиаоперации одной сущности сериализованы обновлением ID без изменения значения через Fluent внутри транзакции.
+        При ошибке выполняется попытка восстановить S3 из временных копий;
+        ошибка неполного восстановления явно указана в reason.
+      requestBody:
+        required: true
+        content:
+          image/jpeg:
+            schema:
+              type: string
+              format: binary
+          image/png:
+            schema:
+              type: string
+              format: binary
+          image/webp:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Медиа сохранено, ссылки в базе обновлены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaResult'
+        '400':
+          $ref: '#/components/responses/MediaError'
+        '404':
+          $ref: '#/components/responses/MediaError'
+        '413':
+          $ref: '#/components/responses/MediaError'
+        '415':
+          $ref: '#/components/responses/MediaError'
+        '422':
+          $ref: '#/components/responses/MediaError'
+        '500':
+          $ref: '#/components/responses/MediaError'
+        '502':
+          $ref: '#/components/responses/MediaError'
+        '503':
+          $ref: '#/components/responses/MediaError'
+    delete:
+      tags: [Authors]
+      operationId: deleteAuthorImage
+      summary: Удалить изображение и превью автора
+      description: |
+        Прямая ссылка должна относиться к настроенному бакету и быть связана
+        с этой сущностью в базе. URL с query/fragment не принимаются.
+        Ссылка на оригинал или превью удаляет оба файла.
+        Отсутствующий объект в S3 считается удалённым. После удаления ссылки
+        очищаются в базе. Если ссылка уже отвязана, возвращается 400.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaDeleteRequest'
+      responses:
+        '200':
+          description: Медиа удалено, ссылки в базе очищены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaResult'
+        '400':
+          $ref: '#/components/responses/MediaError'
+        '404':
+          $ref: '#/components/responses/MediaError'
+        '500':
+          $ref: '#/components/responses/MediaError'
+        '502':
+          $ref: '#/components/responses/MediaError'
+        '503':
+          $ref: '#/components/responses/MediaError'
+
+  /api/users/{userID}/image:
+    parameters:
+      - $ref: '#/components/parameters/UserID'
+    post:
+      tags: [Users]
+      operationId: uploadUserImage
+      summary: Загрузить или заменить изображение пользователя
+      description: |
+        Бинарное тело запроса содержит один файл, без multipart-обёртки.
+        JPEG/PNG/WebP до 20971520 байт (20 MiB). Базовое изображение — PNG,
+        максимум 1024 px по большой стороне без увеличения исходника.
+        Превью — центральный квадрат базового изображения, 96×96 px,
+        JPEG quality 80, белый фон вместо прозрачности. Вес 3–4 КБ ориентировочный.
+        Обрабатывается первый кадр; ориентация EXIF учитывается, метаданные удаляются.
+        Предел исходного изображения: 100 мегапикселей и 20000 px по стороне.
+        Ответ возвращается после загрузки в S3 и обновления базы.
+        Замена использует текущие имена сущностей и удаляет предыдущие объекты
+        по сохранённым в базе ссылкам. Простое переименование не перемещает файлы.
+        Медиаоперации одной сущности сериализованы обновлением ID без изменения значения через Fluent внутри транзакции.
+        При ошибке выполняется попытка восстановить S3 из временных копий;
+        ошибка неполного восстановления явно указана в reason.
+      requestBody:
+        required: true
+        content:
+          image/jpeg:
+            schema:
+              type: string
+              format: binary
+          image/png:
+            schema:
+              type: string
+              format: binary
+          image/webp:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Медиа сохранено, ссылки в базе обновлены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaResult'
+        '400':
+          $ref: '#/components/responses/MediaError'
+        '404':
+          $ref: '#/components/responses/MediaError'
+        '413':
+          $ref: '#/components/responses/MediaError'
+        '415':
+          $ref: '#/components/responses/MediaError'
+        '422':
+          $ref: '#/components/responses/MediaError'
+        '500':
+          $ref: '#/components/responses/MediaError'
+        '502':
+          $ref: '#/components/responses/MediaError'
+        '503':
+          $ref: '#/components/responses/MediaError'
+    delete:
+      tags: [Users]
+      operationId: deleteUserImage
+      summary: Удалить изображение и превью пользователя
+      description: |
+        Прямая ссылка должна относиться к настроенному бакету и быть связана
+        с этой сущностью в базе. URL с query/fragment не принимаются.
+        Ссылка на оригинал или превью удаляет оба файла.
+        Отсутствующий объект в S3 считается удалённым. После удаления ссылки
+        очищаются в базе. Если ссылка уже отвязана, возвращается 400.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaDeleteRequest'
+      responses:
+        '200':
+          description: Медиа удалено, ссылки в базе очищены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaResult'
+        '400':
+          $ref: '#/components/responses/MediaError'
+        '404':
+          $ref: '#/components/responses/MediaError'
+        '500':
+          $ref: '#/components/responses/MediaError'
+        '502':
+          $ref: '#/components/responses/MediaError'
+        '503':
+          $ref: '#/components/responses/MediaError'
+
+  /api/sections/{sectionID}/image:
+    parameters:
+      - $ref: '#/components/parameters/SectionID'
+    post:
+      tags: [Sections]
+      operationId: uploadSectionImage
+      summary: Загрузить или заменить изображение раздела
+      description: |
+        Бинарное тело запроса содержит один файл, без multipart-обёртки.
+        JPEG/PNG/WebP до 20971520 байт (20 MiB). Базовое изображение — PNG,
+        максимум 1024 px по большой стороне без увеличения исходника.
+        Превью — центральный квадрат базового изображения, 96×96 px,
+        JPEG quality 80, белый фон вместо прозрачности. Вес 3–4 КБ ориентировочный.
+        Обрабатывается первый кадр; ориентация EXIF учитывается, метаданные удаляются.
+        Предел исходного изображения: 100 мегапикселей и 20000 px по стороне.
+        Ответ возвращается после загрузки в S3 и обновления базы.
+        Замена использует текущие имена сущностей и удаляет предыдущие объекты
+        по сохранённым в базе ссылкам. Простое переименование не перемещает файлы.
+        Медиаоперации одной сущности сериализованы обновлением ID без изменения значения через Fluent внутри транзакции.
+        При ошибке выполняется попытка восстановить S3 из временных копий;
+        ошибка неполного восстановления явно указана в reason.
+      requestBody:
+        required: true
+        content:
+          image/jpeg:
+            schema:
+              type: string
+              format: binary
+          image/png:
+            schema:
+              type: string
+              format: binary
+          image/webp:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Медиа сохранено, ссылки в базе обновлены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaResult'
+        '400':
+          $ref: '#/components/responses/MediaError'
+        '404':
+          $ref: '#/components/responses/MediaError'
+        '413':
+          $ref: '#/components/responses/MediaError'
+        '415':
+          $ref: '#/components/responses/MediaError'
+        '422':
+          $ref: '#/components/responses/MediaError'
+        '500':
+          $ref: '#/components/responses/MediaError'
+        '502':
+          $ref: '#/components/responses/MediaError'
+        '503':
+          $ref: '#/components/responses/MediaError'
+    delete:
+      tags: [Sections]
+      operationId: deleteSectionImage
+      summary: Удалить изображение и превью раздела
+      description: |
+        Прямая ссылка должна относиться к настроенному бакету и быть связана
+        с этой сущностью в базе. URL с query/fragment не принимаются.
+        Ссылка на оригинал или превью удаляет оба файла.
+        Отсутствующий объект в S3 считается удалённым. После удаления ссылки
+        очищаются в базе. Если ссылка уже отвязана, возвращается 400.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaDeleteRequest'
+      responses:
+        '200':
+          description: Медиа удалено, ссылки в базе очищены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaResult'
+        '400':
+          $ref: '#/components/responses/MediaError'
+        '404':
+          $ref: '#/components/responses/MediaError'
+        '500':
+          $ref: '#/components/responses/MediaError'
+        '502':
+          $ref: '#/components/responses/MediaError'
+        '503':
+          $ref: '#/components/responses/MediaError'
+
+  /api/books/{bookID}/image:
+    parameters:
+      - $ref: '#/components/parameters/BookID'
+    post:
+      tags: [Books]
+      operationId: uploadBookImage
+      summary: Загрузить или заменить изображение книги
+      description: |
+        Бинарное тело запроса содержит один файл, без multipart-обёртки.
+        JPEG/PNG/WebP до 20971520 байт (20 MiB). Базовое изображение — PNG,
+        максимум 1024 px по большой стороне без увеличения исходника.
+        Превью — центральный квадрат базового изображения, 96×96 px,
+        JPEG quality 80, белый фон вместо прозрачности. Вес 3–4 КБ ориентировочный.
+        Обрабатывается первый кадр; ориентация EXIF учитывается, метаданные удаляются.
+        Предел исходного изображения: 100 мегапикселей и 20000 px по стороне.
+        Ответ возвращается после загрузки в S3 и обновления базы.
+        Замена использует текущие имена сущностей и удаляет предыдущие объекты
+        по сохранённым в базе ссылкам. Простое переименование не перемещает файлы.
+        Медиаоперации одной сущности сериализованы обновлением ID без изменения значения через Fluent внутри транзакции.
+        При ошибке выполняется попытка восстановить S3 из временных копий;
+        ошибка неполного восстановления явно указана в reason.
+      requestBody:
+        required: true
+        content:
+          image/jpeg:
+            schema:
+              type: string
+              format: binary
+          image/png:
+            schema:
+              type: string
+              format: binary
+          image/webp:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Медиа сохранено, ссылки в базе обновлены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaResult'
+        '400':
+          $ref: '#/components/responses/MediaError'
+        '404':
+          $ref: '#/components/responses/MediaError'
+        '413':
+          $ref: '#/components/responses/MediaError'
+        '415':
+          $ref: '#/components/responses/MediaError'
+        '422':
+          $ref: '#/components/responses/MediaError'
+        '500':
+          $ref: '#/components/responses/MediaError'
+        '502':
+          $ref: '#/components/responses/MediaError'
+        '503':
+          $ref: '#/components/responses/MediaError'
+    delete:
+      tags: [Books]
+      operationId: deleteBookImage
+      summary: Удалить изображение и превью книги
+      description: |
+        Прямая ссылка должна относиться к настроенному бакету и быть связана
+        с этой сущностью в базе. URL с query/fragment не принимаются.
+        Ссылка на оригинал или превью удаляет оба файла.
+        Отсутствующий объект в S3 считается удалённым. После удаления ссылки
+        очищаются в базе. Если ссылка уже отвязана, возвращается 400.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaDeleteRequest'
+      responses:
+        '200':
+          description: Медиа удалено, ссылки в базе очищены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaResult'
+        '400':
+          $ref: '#/components/responses/MediaError'
+        '404':
+          $ref: '#/components/responses/MediaError'
+        '500':
+          $ref: '#/components/responses/MediaError'
+        '502':
+          $ref: '#/components/responses/MediaError'
+        '503':
+          $ref: '#/components/responses/MediaError'
+
+  /api/books/{bookID}/chapters/{chapterID}/image:
+    parameters:
+      - $ref: '#/components/parameters/BookID'
+      - $ref: '#/components/parameters/ChapterID'
+    post:
+      tags: [Books]
+      operationId: uploadChapterImage
+      summary: Загрузить или заменить изображение главы
+      description: |
+        Бинарное тело запроса содержит один файл, без multipart-обёртки.
+        JPEG/PNG/WebP до 20971520 байт (20 MiB). Базовое изображение — PNG,
+        максимум 1024 px по большой стороне без увеличения исходника.
+        Превью — центральный квадрат базового изображения, 96×96 px,
+        JPEG quality 80, белый фон вместо прозрачности. Вес 3–4 КБ ориентировочный.
+        Обрабатывается первый кадр; ориентация EXIF учитывается, метаданные удаляются.
+        Предел исходного изображения: 100 мегапикселей и 20000 px по стороне.
+        Ответ возвращается после загрузки в S3 и обновления базы.
+        Замена использует текущие имена сущностей и удаляет предыдущие объекты
+        по сохранённым в базе ссылкам. Простое переименование не перемещает файлы.
+        Медиаоперации одной сущности сериализованы обновлением ID без изменения значения через Fluent внутри транзакции.
+        При ошибке выполняется попытка восстановить S3 из временных копий;
+        ошибка неполного восстановления явно указана в reason.
+      parameters:
+        - name: chapterNumber
+          in: query
+          required: true
+          description: Номер главы, начиная с 1; минимум две цифры в имени файла (chapter_01, chapter_100).
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          image/jpeg:
+            schema:
+              type: string
+              format: binary
+          image/png:
+            schema:
+              type: string
+              format: binary
+          image/webp:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Медиа сохранено, ссылки в базе обновлены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaResult'
+        '400':
+          $ref: '#/components/responses/MediaError'
+        '404':
+          $ref: '#/components/responses/MediaError'
+        '413':
+          $ref: '#/components/responses/MediaError'
+        '415':
+          $ref: '#/components/responses/MediaError'
+        '422':
+          $ref: '#/components/responses/MediaError'
+        '500':
+          $ref: '#/components/responses/MediaError'
+        '502':
+          $ref: '#/components/responses/MediaError'
+        '503':
+          $ref: '#/components/responses/MediaError'
+    delete:
+      tags: [Books]
+      operationId: deleteChapterImage
+      summary: Удалить изображение и превью главы
+      description: |
+        Прямая ссылка должна относиться к настроенному бакету и быть связана
+        с этой сущностью в базе. URL с query/fragment не принимаются.
+        Ссылка на оригинал или превью удаляет оба файла.
+        Отсутствующий объект в S3 считается удалённым. После удаления ссылки
+        очищаются в базе. Если ссылка уже отвязана, возвращается 400.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaDeleteRequest'
+      responses:
+        '200':
+          description: Медиа удалено, ссылки в базе очищены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaResult'
+        '400':
+          $ref: '#/components/responses/MediaError'
+        '404':
+          $ref: '#/components/responses/MediaError'
+        '500':
+          $ref: '#/components/responses/MediaError'
+        '502':
+          $ref: '#/components/responses/MediaError'
+        '503':
+          $ref: '#/components/responses/MediaError'
+
+  /api/books/{bookID}/chapters/{chapterID}/audio:
+    parameters:
+      - $ref: '#/components/parameters/BookID'
+      - $ref: '#/components/parameters/ChapterID'
+    post:
+      tags: [Books]
+      operationId: uploadChapterAudio
+      summary: Загрузить или заменить файл аудио главы
+      description: |
+        Бинарное тело запроса содержит один файл, без multipart-обёртки.
+        MP3/M4A до 1073741824 байт (1 GiB), без перекодирования.
+        Имя содержит текущего первого автора книги, название книги и chapter_NN.
+        Автор определяется по первой роли author (createDate, затем UUID);
+        при отсутствии роли используется authorId книги.
+        Ответ возвращается после загрузки в S3 и обновления базы.
+        Замена использует текущие имена сущностей и удаляет предыдущие объекты
+        по сохранённым в базе ссылкам. Простое переименование не перемещает файлы.
+        Медиаоперации одной сущности сериализованы обновлением ID без изменения значения через Fluent внутри транзакции.
+        При ошибке выполняется попытка восстановить S3 из временных копий;
+        ошибка неполного восстановления явно указана в reason.
+      parameters:
+        - name: chapterNumber
+          in: query
+          required: true
+          description: Номер главы, начиная с 1; минимум две цифры в имени файла (chapter_01, chapter_100).
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          audio/mpeg:
+            schema:
+              type: string
+              format: binary
+          audio/mp4:
+            schema:
+              type: string
+              format: binary
+          audio/m4a:
+            schema:
+              type: string
+              format: binary
+          audio/x-m4a:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Медиа сохранено, ссылки в базе обновлены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaResult'
+        '400':
+          $ref: '#/components/responses/MediaError'
+        '404':
+          $ref: '#/components/responses/MediaError'
+        '413':
+          $ref: '#/components/responses/MediaError'
+        '415':
+          $ref: '#/components/responses/MediaError'
+        '422':
+          $ref: '#/components/responses/MediaError'
+        '500':
+          $ref: '#/components/responses/MediaError'
+        '502':
+          $ref: '#/components/responses/MediaError'
+        '503':
+          $ref: '#/components/responses/MediaError'
+    delete:
+      tags: [Books]
+      operationId: deleteChapterAudio
+      summary: Удалить аудиофайл аудио главы
+      description: |
+        Прямая ссылка должна относиться к настроенному бакету и быть связана
+        с этой сущностью в базе. URL с query/fragment не принимаются.
+        Удаляется аудиофайл главы.
+        Отсутствующий объект в S3 считается удалённым. После удаления ссылки
+        очищаются в базе. Если ссылка уже отвязана, возвращается 400.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaDeleteRequest'
+      responses:
+        '200':
+          description: Медиа удалено, ссылки в базе очищены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaResult'
+        '400':
+          $ref: '#/components/responses/MediaError'
+        '404':
+          $ref: '#/components/responses/MediaError'
+        '500':
+          $ref: '#/components/responses/MediaError'
+        '502':
+          $ref: '#/components/responses/MediaError'
+        '503':
+          $ref: '#/components/responses/MediaError'
+
   /api/sections:
     get:
       tags: [Sections]
@@ -1024,6 +1605,17 @@ components:
         format: uri
 
   responses:
+    MediaError:
+      description: |
+        Ошибка с текстовым reason. 400 — неверный ID, номер главы или URL;
+        404 — сущность отсутствует; 413 — превышен лимит файла;
+        415 — неподдерживаемый формат; 422 — повреждённый файл или некорректное имя;
+        500 — ошибка базы/локальных файлов; 502 — ошибка S3 или неполное восстановление;
+        503 — S3 не настроен или недоступен обработчик изображений.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
     BadRequest:
       description: Некорректные параметры или тело запроса
       content:
@@ -1056,6 +1648,30 @@ components:
             type: string
 
   schemas:
+    MediaDeleteRequest:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Прямая ссылка на текущий медиафайл этой сущности в настроенном бакете.
+    MediaResult:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+          example: true
+        url:
+          type: string
+          format: uri
+          description: Базовое изображение или аудио; отсутствует после удаления.
+        previewUrl:
+          type: string
+          format: uri
+          description: JPEG-превью; отсутствует для аудио и после удаления.
+
     Error:
       type: object
       required: [error, reason]
@@ -1091,6 +1707,9 @@ components:
           type: string
         lastName:
           type: string
+        previewUrl:
+          type: string
+          description: Ссылка на квадратное JPEG-превью 96×96; после удаления поле отсутствует.
         photoUrl:
           type: string
         link:
@@ -1107,7 +1726,7 @@ components:
 
     AuthorWrite:
       type: object
-      description: Все поля DTO автора необязательны; отсутствующие строковые поля сохраняются как пустые строки.
+      description: Все поля DTO автора необязательны. При обновлении отсутствующие photoUrl и previewUrl сохраняют прежние ссылки; остальные отсутствующие строковые поля заменяются пустыми строками.
       properties:
         id:
           type: string
@@ -1116,6 +1735,9 @@ components:
           type: string
         lastName:
           type: string
+        previewUrl:
+          type: string
+          description: Ссылка на квадратное JPEG-превью 96×96; после удаления поле отсутствует.
         photoUrl:
           type: string
         link:
@@ -1155,6 +1777,9 @@ components:
           description: Секунды от 2001-01-01 00:00:00 UTC (стандартное кодирование Swift `Date`)
         login:
           type: string
+        previewUrl:
+          type: string
+          description: Ссылка на квадратное JPEG-превью 96×96; после удаления поле отсутствует.
         photoUrl:
           type: string
         link:
@@ -1164,7 +1789,7 @@ components:
 
     UserWrite:
       type: object
-      description: Все поля DTO пользователя необязательны; отсутствующие строковые поля при обновлении заменяются пустыми строками, кроме `pass`.
+      description: Все поля DTO пользователя необязательны; при обновлении отсутствующие pass, photoUrl и previewUrl сохраняют прежние значения, остальные строковые поля заменяются пустыми строками.
       properties:
         id:
           type: string
@@ -1186,6 +1811,9 @@ components:
         pass:
           type: string
           writeOnly: true
+        previewUrl:
+          type: string
+          description: Ссылка на квадратное JPEG-превью 96×96; после удаления поле отсутствует.
         photoUrl:
           type: string
         link:
@@ -1219,6 +1847,9 @@ components:
           description: Человекочитаемый идентификатор для URL
         title:
           type: string
+        previewUrl:
+          type: string
+          description: Ссылка на квадратное JPEG-превью 96×96; после удаления поле отсутствует.
         coverUrl:
           type: string
         textLink:
@@ -1234,6 +1865,7 @@ components:
 
     SectionWrite:
       type: object
+      description: При обновлении отсутствующие coverUrl и previewUrl сохраняют прежние ссылки.
       required: [name, title, template, bookTemplate]
       properties:
         id:
@@ -1246,6 +1878,9 @@ components:
           type: string
         title:
           type: string
+        previewUrl:
+          type: string
+          description: Ссылка на квадратное JPEG-превью 96×96; после удаления поле отсутствует.
         coverUrl:
           type: string
         textLink:
@@ -1611,6 +2246,7 @@ components:
           type: string
         previewUrl:
           type: string
+          description: Ссылка на большое изображение — coverUrl книги/раздела или photoUrl автора/пользователя, независимо от наличия маленького превью.
 
     FileInfo:
       type: object

@@ -84,7 +84,9 @@ struct AuthorController: RouteCollection {
         let updatedAuthor = try req.content.decode(AuthorDTO.self)
         author.firstName = updatedAuthor.firstName ?? ""
         author.lastName = updatedAuthor.lastName ?? ""
-        author.photoUrl = updatedAuthor.photoUrl ?? ""
+        // Renaming without media fields keeps the existing S3 links.
+        if let url = updatedAuthor.photoUrl { author.photoUrl = url }
+        if let url = updatedAuthor.previewUrl { author.previewUrl = url }
         author.link = updatedAuthor.link ?? ""
         author.description = updatedAuthor.description ?? ""
         

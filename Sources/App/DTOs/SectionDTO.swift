@@ -13,6 +13,7 @@ struct SectionDTO: Content {
     var parentId: Section.IDValue?
     var name: String
     var title: String
+    var previewUrl: String?
     var coverUrl: String?
     var textLink: String?
     var description: String?
@@ -30,6 +31,7 @@ struct SectionDTO: Content {
                             template: self.template,
                             bookTemplate: self.bookTemplate)
                 
+        model.previewUrl = self.previewUrl
         return model
     }
 }
@@ -41,6 +43,7 @@ extension Section {
             parentId: self.$parent.id,
             name: self.$name.value ?? "",
             title: self.$title.value ?? "",
+            previewUrl: self.previewUrl,
             coverUrl: self.$coverUrl.value,
             textLink: self.$textLink.value,
             description: self.$description.value,

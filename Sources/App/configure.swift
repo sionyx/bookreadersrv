@@ -29,6 +29,10 @@ public func configure(_ app: Application) async throws {
     app.migrations.add(CreateUser())
     app.migrations.add(CreateRole())
     app.migrations.add(CreateChapter())
+    app.migrations.add(AddMediaPreviews())
+
+    app.mediaStorage = try MediaStorage()
+    app.lifecycle.use(MediaStorageLifecycle())
 
     app.views.use(.leaf)
     
