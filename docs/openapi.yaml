@@ -1,0 +1,1621 @@
+openapi: 3.0.3
+info:
+  title: Book Reader Server API
+  version: 1.0.0
+  description: |
+    HTTP API серверной части приложения для чтения книг на Vapor.
+
+    JSON API доступен под префиксом `/api`, а пользовательские HTML-страницы —
+    под `/app`. Аутентификация и авторизация в текущей реализации не подключены.
+
+    Поля `publishDate` в DTO книги и главы передаются как Unix time в секундах.
+    Поля `createDate`, `updateDate` и `deleteDate` типа Swift `Date` кодируются
+    стандартным `JSONEncoder` как число секунд от 2001-01-01 00:00:00 UTC.
+servers:
+  - url: http://localhost:8080
+    description: Локальный сервер Vapor
+
+tags:
+  - name: Sections
+    description: Разделы каталога и их содержимое
+  - name: Authors
+    description: Авторы
+  - name: Books
+    description: Книги, роли участников и главы
+  - name: Users
+    description: Пользователи, публикующие книги
+  - name: Roles
+    description: Роли авторов и других участников книги
+  - name: Chapters
+    description: Главы книги
+  - name: Info
+    description: Краткие метаданные для предпросмотра страниц
+  - name: Views
+    description: Управление файлами Leaf-шаблонов
+  - name: App
+    description: HTML-страницы приложения
+
+paths:
+  /api/sections:
+    get:
+      tags: [Sections]
+      operationId: listRootSections
+      summary: Получить корневые разделы
+      responses:
+        '200':
+          description: Список разделов без родительского раздела
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Section'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Sections]
+      operationId: createSection
+      summary: Создать раздел
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SectionWrite'
+      responses:
+        '200':
+          description: Созданный раздел
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Section'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/sections/search:
+    get:
+      tags: [Sections]
+      operationId: searchSections
+      summary: Найти разделы по части заголовка
+      parameters:
+        - name: title
+          in: query
+          required: true
+          description: Подстрока для регистронезависимого поиска по `title`
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Найденные разделы
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Section'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/sections/path/{sectionID}:
+    get:
+      tags: [Sections]
+      operationId: getSectionPath
+      summary: Получить путь от корневого раздела до указанного
+      parameters:
+        - $ref: '#/components/parameters/SectionID'
+      responses:
+        '200':
+          description: Разделы пути в порядке от корня к указанному разделу
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Section'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/sections/{sectionID}:
+    parameters:
+      - $ref: '#/components/parameters/SectionID'
+    get:
+      tags: [Sections]
+      operationId: getSection
+      summary: Получить раздел вместе с подразделами и книгами
+      responses:
+        '200':
+          description: Содержимое раздела
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SectionContent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Sections]
+      operationId: updateSection
+      summary: Полностью обновить раздел
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SectionWrite'
+      responses:
+        '200':
+          description: Обновлённый раздел
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Section'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Sections]
+      operationId: deleteSection
+      summary: Удалить раздел
+      responses:
+        '200':
+          description: Раздел удалён
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/authors:
+    get:
+      tags: [Authors]
+      operationId: listAuthors
+      summary: Получить страницу авторов
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Per'
+      responses:
+        '200':
+          description: Авторы, отсортированные по фамилии и имени
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Authors]
+      operationId: createAuthor
+      summary: Создать автора
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorWrite'
+      responses:
+        '200':
+          description: Созданный автор
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Author'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/authors/search:
+    get:
+      tags: [Authors]
+      operationId: searchAuthors
+      summary: Найти авторов по имени или фамилии
+      parameters:
+        - name: name
+          in: query
+          required: true
+          description: Подстрока для регистронезависимого поиска; пустая строка возвращает всех авторов
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Per'
+      responses:
+        '200':
+          description: Страница найденных авторов
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/authors/{authorID}:
+    parameters:
+      - $ref: '#/components/parameters/AuthorID'
+    get:
+      tags: [Authors]
+      operationId: getAuthor
+      summary: Получить автора
+      responses:
+        '200':
+          description: Автор
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Author'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Authors]
+      operationId: updateAuthor
+      summary: Обновить автора
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorWrite'
+      responses:
+        '200':
+          description: Обновлённый автор
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Author'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Authors]
+      operationId: deleteAuthor
+      summary: Удалить автора
+      responses:
+        '200':
+          description: Автор удалён
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/books:
+    get:
+      tags: [Books]
+      operationId: listBooks
+      summary: Получить все книги
+      responses:
+        '200':
+          description: Список книг
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Books]
+      operationId: createBook
+      summary: Создать книгу вместе с ролями и главами
+      description: |
+        Массив `roles` должен содержать хотя бы один элемент, а его первый элемент —
+        `authorId`. Этот идентификатор становится основным `authorId` книги.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookCreate'
+      responses:
+        '200':
+          description: Созданная книга с ролями и главами
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/books/{bookID}:
+    parameters:
+      - $ref: '#/components/parameters/BookID'
+    get:
+      tags: [Books]
+      operationId: getBook
+      summary: Получить книгу с ролями и главами
+      responses:
+        '200':
+          description: Книга
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Books]
+      operationId: updateBook
+      summary: Полностью обновить книгу, роли и главы
+      description: |
+        Переданные роли создаются или обновляются по паре `bookId`/`authorId`.
+        Переданные главы с известным `id` обновляются, остальные создаются.
+        Отсутствующие в запросе роли и главы не удаляются.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookUpdate'
+      responses:
+        '200':
+          description: Обновлённая книга
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Books]
+      operationId: deleteBook
+      summary: Удалить книгу вместе с её ролями и главами
+      responses:
+        '200':
+          description: Книга удалена
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/users:
+    get:
+      tags: [Users]
+      operationId: listUsers
+      summary: Получить страницу пользователей
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Per'
+      responses:
+        '200':
+          description: Пользователи, отсортированные по логину
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Users]
+      operationId: createUser
+      summary: Создать пользователя
+      description: Пароль при создании сохраняется в том виде, в котором передан текущей реализации.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserWrite'
+      responses:
+        '200':
+          description: Созданный пользователь; поле `pass` не возвращается
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/users/search:
+    get:
+      tags: [Users]
+      operationId: searchUsers
+      summary: Найти пользователей по логину
+      parameters:
+        - name: name
+          in: query
+          required: true
+          description: Подстрока логина; пустая строка возвращает всех пользователей
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Per'
+      responses:
+        '200':
+          description: Страница найденных пользователей
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/users/{userID}:
+    parameters:
+      - $ref: '#/components/parameters/UserID'
+    get:
+      tags: [Users]
+      operationId: getUser
+      summary: Получить пользователя
+      responses:
+        '200':
+          description: Пользователь без пароля
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Users]
+      operationId: updateUser
+      summary: Обновить пользователя
+      description: Непустой `pass` хешируется SHA-1; пустой или отсутствующий `pass` не меняет пароль.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserWrite'
+      responses:
+        '200':
+          description: Обновлённый пользователь без пароля
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Users]
+      operationId: deleteUser
+      summary: Удалить пользователя
+      responses:
+        '200':
+          description: Пользователь удалён
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/roles/{roleID}:
+    parameters:
+      - $ref: '#/components/parameters/RoleID'
+    get:
+      tags: [Roles]
+      operationId: listRolesForBook
+      summary: Получить роли книги
+      deprecated: true
+      description: |
+        Текущая реализация маршрута зарегистрирована с параметром `roleID`, но
+        обработчик читает отсутствующий параметр `bookID`. Поэтому запрос всегда
+        завершается ответом 400. Для рабочего контракта маршрут и обработчик должны
+        использовать одно имя параметра; предполагаемый успешный ответ описан ниже.
+      responses:
+        '200':
+          description: Роли книги (предполагаемый ответ после исправления обработчика)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Role'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      x-implementation-issue: Handler expects a bookID route parameter that is not registered.
+    put:
+      tags: [Roles]
+      operationId: updateRole
+      summary: Изменить тип роли
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleUpdate'
+      responses:
+        '200':
+          description: Обновлённая роль
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Roles]
+      operationId: deleteRole
+      summary: Удалить роль
+      responses:
+        '200':
+          description: Роль удалена
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/chapters/{chapterID}:
+    parameters:
+      - $ref: '#/components/parameters/ChapterID'
+    get:
+      tags: [Chapters]
+      operationId: getChapter
+      summary: Получить главу
+      responses:
+        '200':
+          description: Глава; `index` для этого маршрута всегда равен 0
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chapter'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Chapters]
+      operationId: updateChapter
+      summary: Обновить главу
+      description: "`title` и `mediaUrl` обязательны; остальные поля изменяются только если переданы."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChapterWrite'
+      responses:
+        '200':
+          description: Обновлённая глава
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chapter'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Chapters]
+      operationId: deleteChapter
+      summary: Удалить главу
+      responses:
+        '200':
+          description: Глава удалена
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/info/books/{book}:
+    get:
+      tags: [Info]
+      operationId: getBookInfo
+      summary: Получить краткие метаданные книги
+      parameters:
+        - name: book
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          $ref: '#/components/responses/InfoResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/info/player/{book}:
+    get:
+      tags: [Info]
+      operationId: getPlayerInfo
+      summary: Получить метаданные книги для страницы плеера
+      parameters:
+        - name: book
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          $ref: '#/components/responses/InfoResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/info/sections/{section}:
+    get:
+      tags: [Info]
+      operationId: getSectionInfo
+      summary: Получить краткие метаданные раздела
+      parameters:
+        - name: section
+          in: path
+          required: true
+          description: Человекочитаемое имя раздела (`name`), не UUID
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/InfoResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/info/authors/{author}:
+    get:
+      tags: [Info]
+      operationId: getAuthorInfo
+      summary: Получить краткие метаданные автора
+      parameters:
+        - name: author
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          $ref: '#/components/responses/InfoResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/info/users/{user}:
+    get:
+      tags: [Info]
+      operationId: getUserInfo
+      summary: Получить краткие метаданные пользователя
+      parameters:
+        - name: user
+          in: path
+          required: true
+          description: Логин пользователя, не UUID
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/InfoResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/views:
+    get:
+      tags: [Views]
+      operationId: listViews
+      summary: Получить список Leaf-шаблонов
+      responses:
+        '200':
+          description: Имена файлов без расширения `.leaf`
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FileInfo'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/views/{viewName}:
+    parameters:
+      - name: viewName
+        in: path
+        required: true
+        description: Имя Leaf-шаблона без расширения `.leaf`
+        schema:
+          type: string
+    get:
+      tags: [Views]
+      operationId: getView
+      summary: Скачать исходный текст Leaf-шаблона
+      responses:
+        '200':
+          description: Содержимое файла шаблона
+          content:
+            text/plain:
+              schema:
+                type: string
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Views]
+      operationId: putViewContents
+      summary: Создать или полностью перезаписать Leaf-шаблон
+      description: Тело запроса записывается в файл как есть, после чего шаблон удаляется из кэша Leaf.
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Шаблон записан
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Views]
+      operationId: deleteView
+      summary: Удалить Leaf-шаблон
+      responses:
+        '200':
+          description: Шаблон удалён
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /app/sections:
+    get:
+      tags: [App]
+      operationId: renderCatalog
+      summary: Открыть корневую страницу каталога
+      parameters:
+        - $ref: '#/components/parameters/XPlatform'
+        - $ref: '#/components/parameters/XBaseUrl'
+      responses:
+        '200':
+          $ref: '#/components/responses/HtmlResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /app/sections/{sectionName}:
+    get:
+      tags: [App]
+      operationId: renderSection
+      summary: Открыть страницу раздела
+      parameters:
+        - name: sectionName
+          in: path
+          required: true
+          description: Человекочитаемое имя раздела (`name`)
+          schema:
+            type: string
+        - $ref: '#/components/parameters/XPlatform'
+        - $ref: '#/components/parameters/XBaseUrl'
+      responses:
+        '200':
+          $ref: '#/components/responses/HtmlResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /app/books/{bookId}:
+    get:
+      tags: [App]
+      operationId: renderBook
+      summary: Открыть страницу книги
+      parameters:
+        - name: bookId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/XPlatform'
+        - $ref: '#/components/parameters/XBaseUrl'
+      responses:
+        '200':
+          $ref: '#/components/responses/HtmlResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /app/authors/{authorId}:
+    get:
+      tags: [App]
+      operationId: renderAuthor
+      summary: Открыть страницу автора
+      parameters:
+        - name: authorId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/XPlatform'
+        - $ref: '#/components/parameters/XBaseUrl'
+      responses:
+        '200':
+          $ref: '#/components/responses/HtmlResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /app/player/{bookId}:
+    get:
+      tags: [App]
+      operationId: renderPlayer
+      summary: Открыть страницу аудиоплеера
+      parameters:
+        - name: bookId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/XPlatform'
+        - $ref: '#/components/parameters/XBaseUrl'
+      responses:
+        '200':
+          $ref: '#/components/responses/HtmlResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /app/page/{template}:
+    get:
+      tags: [App]
+      operationId: renderPageTemplate
+      summary: Открыть произвольную страницу из разрешённого Leaf-шаблона
+      description: Имя шаблона должно начинаться с `page-`.
+      parameters:
+        - name: template
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^page-'
+            example: page-info
+        - $ref: '#/components/parameters/XPlatform'
+        - $ref: '#/components/parameters/XBaseUrl'
+      responses:
+        '200':
+          $ref: '#/components/responses/HtmlResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  parameters:
+    Page:
+      name: page
+      in: query
+      required: false
+      description: Номер страницы, начиная с 1
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    Per:
+      name: per
+      in: query
+      required: false
+      description: Число элементов на странице
+      schema:
+        type: integer
+        minimum: 1
+        default: 10
+    SectionID:
+      name: sectionID
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AuthorID:
+      name: authorID
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    BookID:
+      name: bookID
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    UserID:
+      name: userID
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RoleID:
+      name: roleID
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ChapterID:
+      name: chapterID
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    XPlatform:
+      name: X-Platform
+      in: header
+      required: false
+      description: Платформа клиента, доступная Leaf-шаблону; по умолчанию `any`
+      schema:
+        type: string
+        default: any
+    XBaseUrl:
+      name: X-Base-Url
+      in: header
+      required: false
+      description: Внешний базовый URL, обычно устанавливаемый reverse proxy
+      schema:
+        type: string
+        format: uri
+
+  responses:
+    BadRequest:
+      description: Некорректные параметры или тело запроса
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalServerError:
+      description: Внутренняя ошибка сервера или базы данных
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InfoResponse:
+      description: Краткие метаданные ресурса
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Info'
+    HtmlResponse:
+      description: HTML-страница, сформированная Leaf
+      content:
+        text/html:
+          schema:
+            type: string
+
+  schemas:
+    Error:
+      type: object
+      required: [error, reason]
+      properties:
+        error:
+          type: boolean
+          example: true
+        reason:
+          type: string
+          example: Not Found
+
+    PageMetadata:
+      type: object
+      required: [page, per, total]
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        per:
+          type: integer
+          minimum: 1
+        total:
+          type: integer
+          minimum: 0
+
+    Author:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        photoUrl:
+          type: string
+        link:
+          type: string
+        description:
+          type: string
+      example:
+        id: 7f04819b-f03f-4aa5-a084-d830ea00cc20
+        firstName: Лев
+        lastName: Толстой
+        photoUrl: https://cdn.example.com/authors/tolstoy.jpg
+        link: https://example.com/authors/tolstoy
+        description: Русский писатель
+
+    AuthorWrite:
+      type: object
+      description: Все поля DTO автора необязательны; отсутствующие строковые поля сохраняются как пустые строки.
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        photoUrl:
+          type: string
+        link:
+          type: string
+        description:
+          type: string
+
+    AuthorPage:
+      type: object
+      required: [items, metadata]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Author'
+        metadata:
+          $ref: '#/components/schemas/PageMetadata'
+
+    User:
+      type: object
+      description: Ответы API намеренно не содержат поле `pass`.
+      properties:
+        id:
+          type: string
+          format: uuid
+        createDate:
+          type: number
+          format: double
+          description: Секунды от 2001-01-01 00:00:00 UTC (стандартное кодирование Swift `Date`)
+        updateDate:
+          type: number
+          format: double
+          description: Секунды от 2001-01-01 00:00:00 UTC (стандартное кодирование Swift `Date`)
+        deleteDate:
+          type: number
+          format: double
+          description: Секунды от 2001-01-01 00:00:00 UTC (стандартное кодирование Swift `Date`)
+        login:
+          type: string
+        photoUrl:
+          type: string
+        link:
+          type: string
+        description:
+          type: string
+
+    UserWrite:
+      type: object
+      description: Все поля DTO пользователя необязательны; отсутствующие строковые поля при обновлении заменяются пустыми строками, кроме `pass`.
+      properties:
+        id:
+          type: string
+          format: uuid
+        createDate:
+          type: number
+          format: double
+          description: Секунды от 2001-01-01 00:00:00 UTC (стандартное кодирование Swift `Date`)
+        updateDate:
+          type: number
+          format: double
+          description: Секунды от 2001-01-01 00:00:00 UTC (стандартное кодирование Swift `Date`)
+        deleteDate:
+          type: number
+          format: double
+          description: Секунды от 2001-01-01 00:00:00 UTC (стандартное кодирование Swift `Date`)
+        login:
+          type: string
+        pass:
+          type: string
+          writeOnly: true
+        photoUrl:
+          type: string
+        link:
+          type: string
+        description:
+          type: string
+
+    UserPage:
+      type: object
+      required: [items, metadata]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        metadata:
+          $ref: '#/components/schemas/PageMetadata'
+
+    Section:
+      type: object
+      required: [name, title, template, bookTemplate]
+      properties:
+        id:
+          type: string
+          format: uuid
+        parentId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: Человекочитаемый идентификатор для URL
+        title:
+          type: string
+        coverUrl:
+          type: string
+        textLink:
+          type: string
+        description:
+          type: string
+        template:
+          type: string
+          description: Имя Leaf-шаблона раздела
+        bookTemplate:
+          type: string
+          description: Имя Leaf-шаблона страницы книги в этом разделе
+
+    SectionWrite:
+      type: object
+      required: [name, title, template, bookTemplate]
+      properties:
+        id:
+          type: string
+          format: uuid
+        parentId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        title:
+          type: string
+        coverUrl:
+          type: string
+        textLink:
+          type: string
+        description:
+          type: string
+        template:
+          type: string
+        bookTemplate:
+          type: string
+
+    SectionContent:
+      type: object
+      required: [section, sections, books]
+      properties:
+        section:
+          $ref: '#/components/schemas/Section'
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/Section'
+        books:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookShort'
+
+    RoleType:
+      type: string
+      enum: [author, translator, reader, host]
+      description: Автор, переводчик, чтец или ведущий соответственно.
+
+    Role:
+      type: object
+      required: [type]
+      properties:
+        id:
+          type: string
+          format: uuid
+        createDate:
+          type: number
+          format: double
+          description: Секунды от 2001-01-01 00:00:00 UTC (стандартное кодирование Swift `Date`)
+        updateDate:
+          type: number
+          format: double
+          description: Секунды от 2001-01-01 00:00:00 UTC (стандартное кодирование Swift `Date`)
+        deleteDate:
+          type: number
+          format: double
+          description: Секунды от 2001-01-01 00:00:00 UTC (стандартное кодирование Swift `Date`)
+        bookId:
+          type: string
+          format: uuid
+        authorId:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/RoleType'
+        author:
+          $ref: '#/components/schemas/Author'
+        typeString:
+          type: string
+          readOnly: true
+          enum: [Автор, Переводчик, Чтец, Ведущий]
+
+    RoleWrite:
+      type: object
+      required: [authorId, type]
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookId:
+          type: string
+          format: uuid
+        authorId:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/RoleType'
+
+    RoleUpdate:
+      type: object
+      required: [type]
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookId:
+          type: string
+          format: uuid
+        authorId:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/RoleType'
+
+    Chapter:
+      type: object
+      required: [title, mediaUrl]
+      properties:
+        id:
+          type: string
+          format: uuid
+        createDate:
+          type: number
+          format: double
+          description: Секунды от 2001-01-01 00:00:00 UTC (в ответах главы поле не заполняется)
+        updateDate:
+          type: number
+          format: double
+          description: Секунды от 2001-01-01 00:00:00 UTC (в ответах главы поле не заполняется)
+        deleteDate:
+          type: number
+          format: double
+          description: Секунды от 2001-01-01 00:00:00 UTC (в ответах главы поле не заполняется)
+        bookId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        mediaUrl:
+          type: string
+        coverUrl:
+          type: string
+        previewUrl:
+          type: string
+        publishDate:
+          type: number
+          format: double
+          description: Unix time в секундах
+        link:
+          type: string
+        description:
+          type: string
+        index:
+          type: integer
+          minimum: 0
+
+    ChapterWrite:
+      type: object
+      required: [title, mediaUrl]
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        mediaUrl:
+          type: string
+        coverUrl:
+          type: string
+        previewUrl:
+          type: string
+        publishDate:
+          type: number
+          format: double
+          description: Unix time в секундах
+        link:
+          type: string
+        description:
+          type: string
+        index:
+          type: integer
+          minimum: 0
+
+    Book:
+      type: object
+      required:
+        - userId
+        - authorId
+        - sectionId
+        - title
+        - previewUrl
+        - coverUrl
+        - textLink
+        - description
+        - publishDate
+        - template
+      properties:
+        id:
+          type: string
+          format: uuid
+        createDate:
+          type: number
+          format: double
+          description: Unix time в секундах
+        updateDate:
+          type: number
+          format: double
+          description: Unix time в секундах
+        deleteDate:
+          type: number
+          format: double
+          description: Unix time в секундах
+        userId:
+          type: string
+          format: uuid
+        authorId:
+          type: string
+          format: uuid
+        sectionId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        previewUrl:
+          type: string
+        coverUrl:
+          type: string
+        textLink:
+          type: string
+        description:
+          type: string
+        publishDate:
+          type: number
+          format: double
+          description: Unix time в секундах
+        template:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+        chapters:
+          type: array
+          items:
+            $ref: '#/components/schemas/Chapter'
+
+    BookCreate:
+      type: object
+      required:
+        - userId
+        - authorId
+        - sectionId
+        - title
+        - previewUrl
+        - coverUrl
+        - textLink
+        - description
+        - publishDate
+        - template
+        - roles
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        authorId:
+          type: string
+          format: uuid
+          description: Декодируется DTO, но фактическое значение берётся из первого элемента `roles`.
+        sectionId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        previewUrl:
+          type: string
+        coverUrl:
+          type: string
+        textLink:
+          type: string
+        description:
+          type: string
+        publishDate:
+          type: number
+          format: double
+          description: Unix time в секундах
+        template:
+          type: string
+        roles:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/RoleWrite'
+        chapters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChapterWrite'
+
+    BookUpdate:
+      type: object
+      required:
+        - userId
+        - authorId
+        - sectionId
+        - title
+        - previewUrl
+        - coverUrl
+        - textLink
+        - description
+        - publishDate
+        - template
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        authorId:
+          type: string
+          format: uuid
+        sectionId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        previewUrl:
+          type: string
+        coverUrl:
+          type: string
+        textLink:
+          type: string
+        description:
+          type: string
+        publishDate:
+          type: number
+          format: double
+          description: Unix time в секундах
+        template:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleWrite'
+        chapters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChapterWrite'
+
+    BookShort:
+      type: object
+      required: [user, section, title, previewUrl]
+      properties:
+        id:
+          type: string
+          format: uuid
+        user:
+          type: string
+          description: Логин пользователя
+        section:
+          type: string
+          description: Заголовок раздела
+        title:
+          type: string
+        previewUrl:
+          type: string
+
+    Info:
+      type: object
+      required: [title, description, previewUrl]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        previewUrl:
+          type: string
+
+    FileInfo:
+      type: object
+      required: [filename]
+      properties:
+        filename:
+          type: string
+          example: book
