@@ -93,15 +93,20 @@ final class MediaStorage: @unchecked Sendable {
         throw Abort(.badRequest, reason: "URL does not belong to the configured S3 bucket")
     }
 
-    private func signedURL(key: String, method: HTTPMethod) async throws -> URL {
+    private func signedURL(key: String, method: HTTPMethod, headers: HTTPHeaders = .init()) async throws -> URL {
         try validateConfiguration()
         return try await s3.signURL(url: endpoint.appendingPathComponent(bucket).appendingPathComponent(key),
-                                    httpMethod: method, expires: .hours(1))
+                                    httpMethod: method, headers: headers, expires: .hours(1))
     }
 
     func put(file: URL, key: String, contentType: String) async throws {
-        var request = URLRequest(url: try await signedURL(key: key, method: .PUT))
+        // The ACL header must be included in both the signature and the upload.
+        let headers = HTTPHeaders([("x-amz-acl", "public-read")])
+        var request = URLRequest(url: try await signedURL(key: key, method: .PUT, headers: headers))
         request.httpMethod = "PUT"
+        for header in headers {
+            request.setValue(header.value, forHTTPHeaderField: header.name)
+        }
         request.setValue(contentType, forHTTPHeaderField: "Content-Type")
         // Revalidation avoids stale content after a replacement at the same URL.
         request.setValue("public, max-age=0, must-revalidate", forHTTPHeaderField: "Cache-Control")

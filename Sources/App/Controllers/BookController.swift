@@ -19,7 +19,13 @@ struct BookController: RouteCollection {
 
     @Sendable
     func index(req: Request) async throws -> [BookDTO] {
-        try await Book.query(on: req.db).all().map { $0.toDTO() }
+        try await Book.query(on: req.db)
+            .with(\.$roles) { role in
+                role.with(\.$author)
+            }
+            .with(\.$chapters)
+            .all()
+            .map { $0.toDTO() }
     }
 
     @Sendable
