@@ -14,8 +14,9 @@ info:
     для публичного чтения по прямым ссылкам, если политика хранилища это разрешает.
 
     Поля `publishDate` в DTO книги и главы передаются как Unix time в секундах.
-    Поля `createDate`, `updateDate` и `deleteDate` типа Swift `Date` кодируются
-    стандартным `JSONEncoder` как число секунд от 2001-01-01 00:00:00 UTC.
+    Поля типа Swift `Date` кодируются HTTP-кодировщиком Vapor как строки ISO 8601
+    в UTC без долей секунды. В частности, так передаётся `Chapter.createDate`.
+    Числовые даты книги (`TimeInterval`) передаются как Unix time в секундах.
 servers:
   - url: http://localhost:8080
     description: Локальный сервер Vapor
@@ -1989,9 +1990,10 @@ components:
           type: string
           format: uuid
         createDate:
-          type: number
-          format: double
-          description: Секунды от 2001-01-01 00:00:00 UTC (в ответах главы поле не заполняется)
+          type: string
+          format: date-time
+          readOnly: true
+          description: Дата создания главы в ISO 8601 (UTC, без долей секунды); заполняется сервером один раз и не изменяется при обновлении.
         updateDate:
           type: number
           format: double
@@ -2007,6 +2009,11 @@ components:
           type: string
         mediaUrl:
           type: string
+        duration:
+          type: integer
+          format: int32
+          nullable: true
+          description: Длительность аудиофайла главы в секундах. При неизвестной длительности поле отсутствует в ответе. При создании поле необязательно; при обновлении отсутствие поля или null сохраняет прежнее значение.
         coverUrl:
           type: string
         previewUrl:
@@ -2037,6 +2044,11 @@ components:
           type: string
         mediaUrl:
           type: string
+        duration:
+          type: integer
+          format: int32
+          nullable: true
+          description: Длительность аудиофайла главы в секундах. При неизвестной длительности поле отсутствует в ответе. При создании поле необязательно; при обновлении отсутствие поля или null сохраняет прежнее значение.
         coverUrl:
           type: string
         previewUrl:
@@ -2113,6 +2125,7 @@ components:
             $ref: '#/components/schemas/Role'
         chapters:
           type: array
+          description: Главы по точной дате создания в БД по возрастанию; при совпадении дат — по UUID по возрастанию. Доли секунды учитываются при сортировке, хотя не передаются в createDate. Поле index соответствует позиции в этом порядке, начиная с 0.
           items:
             $ref: '#/components/schemas/Chapter'
 

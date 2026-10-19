@@ -16,6 +16,7 @@ struct ChapterDTO: Content {
     var bookId: Book.IDValue?
     var title: String
     var mediaUrl: String
+    var duration: Int32?
     var coverUrl: String?
     var previewUrl: String?
     var publishDate: TimeInterval?
@@ -30,6 +31,7 @@ struct ChapterDTO: Content {
                             coverUrl: self.coverUrl,
                             previewUrl: self.previewUrl,
                             mediaUrl: self.mediaUrl,
+                            duration: self.duration,
                             link: self.link,
                             description: self.description,
                             publishDate: Date(timeIntervalSince1970: self.publishDate ?? 0))
@@ -40,9 +42,11 @@ struct ChapterDTO: Content {
 extension Chapter {
     func toDTO(_ index: Int) -> ChapterDTO {
         return ChapterDTO(id: self.$id.value,
+                          createDate: self.createDate,
                           bookId: self.$book.id,
                           title: self.title,
                           mediaUrl: self.mediaUrl,
+                          duration: self.duration,
                           coverUrl: self.coverUrl,
                           previewUrl: self.previewUrl,
                           publishDate: self.publishDate?.timeIntervalSince1970,
@@ -54,6 +58,9 @@ extension Chapter {
     func update(with dto: ChapterDTO) {
         self.title = dto.title
         self.mediaUrl = dto.mediaUrl
+        if let duration = dto.duration {
+            self.duration = duration
+        }
         if let coverUrl = dto.coverUrl {
             self.coverUrl = coverUrl
         }

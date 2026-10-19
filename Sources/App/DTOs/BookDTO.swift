@@ -69,6 +69,17 @@ struct BookDetailsDTO: Content {
 
 
 extension Book {
+    private func orderedChapterDTOs() -> [ChapterDTO] {
+        self.chapters.sorted { lhs, rhs in
+            let lhsDate = lhs.createDate ?? .distantPast
+            let rhsDate = rhs.createDate ?? .distantPast
+            if lhsDate != rhsDate {
+                return lhsDate < rhsDate
+            }
+            return (lhs.id?.uuidString ?? "") < (rhs.id?.uuidString ?? "")
+        }.enumerated().map { $1.toDTO($0) }
+    }
+
     func toDTO() -> BookDTO {
         BookDTO(
             id: self.id,
@@ -86,7 +97,7 @@ extension Book {
             publishDate: self.publishDate?.timeIntervalSince1970 ?? 0,
             template: self.template ?? "",
             roles: self.roles.map { $0.toDTO() },
-            chapters: self.chapters.enumerated().map { $1.toDTO($0) }
+            chapters: self.orderedChapterDTOs()
         )
     }
     
@@ -113,7 +124,7 @@ extension Book {
             publishDate: self.publishDate?.timeIntervalSince1970 ?? 0,
             template: self.template ?? "",
             roles: self.roles.map { $0.toDTO() },
-            chapters: self.chapters.enumerated().map { $1.toDTO($0) }
+            chapters: self.orderedChapterDTOs()
         )
     }
 }
