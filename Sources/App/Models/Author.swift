@@ -23,8 +23,11 @@ final class Author: LinkNamedModel, @unchecked Sendable {
     @Field(key: "photo_url")
     var photoUrl: String
     
-    @OptionalField(key: "preview_url")
+    @Field(key: "preview_url")
     var previewUrl: String?
+
+    @Field(key: "medium_url")
+    var mediumUrl: String?
 
     @Field(key: "link")
     var link: String
@@ -40,13 +43,15 @@ final class Author: LinkNamedModel, @unchecked Sendable {
 
     init() { }
 
-    init(id: UUID? = nil, firstName: String, lastName: String, photoUrl: String? = nil, link: String? = nil, description: String? = nil) {
-        self.linkName = ""
+    init(id: UUID? = nil, firstName: String, lastName: String, photoUrl: String? = nil, link: String? = nil, description: String? = nil, linkName: String = "", previewUrl: String? = nil, mediumUrl: String? = nil) {
+        self.linkName = linkName
         self.id = id
         self.firstName = firstName
         self.lastName = lastName
         self.photoUrl = photoUrl ?? ""
         self.link = link ?? ""
         self.description = description ?? ""
+        self.previewUrl = previewUrl
+        self.mediumUrl = mediumUrl
     }
 }

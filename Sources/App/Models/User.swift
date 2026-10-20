@@ -33,8 +33,11 @@ final class User: Model, Authenticatable, @unchecked Sendable {
     @Field(key: "photo_url")
     var photoUrl: String
     
-    @OptionalField(key: "preview_url")
+    @Field(key: "preview_url")
     var previewUrl: String?
+
+    @Field(key: "medium_url")
+    var mediumUrl: String?
 
     @Field(key: "link")
     var link: String
@@ -44,7 +47,7 @@ final class User: Model, Authenticatable, @unchecked Sendable {
     
     init() { }
 
-    init(id: UUID? = nil, login: String, pass: String, photoUrl: String? = nil, link: String? = nil, description: String? = nil, createDate: Date? = nil, updateDate: Date? = nil, deleteDate: Date? = nil) {
+    init(id: UUID? = nil, login: String, pass: String, photoUrl: String? = nil, link: String? = nil, description: String? = nil, createDate: Date? = nil, updateDate: Date? = nil, deleteDate: Date? = nil, previewUrl: String? = nil, mediumUrl: String? = nil) {
         self.id = id
         self.createDate = createDate
         self.updateDate = updateDate
@@ -54,6 +57,8 @@ final class User: Model, Authenticatable, @unchecked Sendable {
         self.photoUrl = photoUrl ?? ""
         self.link = link ?? ""
         self.description = description ?? ""
+        self.previewUrl = previewUrl
+        self.mediumUrl = mediumUrl
     }
 }
 

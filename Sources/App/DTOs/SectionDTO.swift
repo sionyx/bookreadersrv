@@ -16,6 +16,7 @@ struct SectionDTO: Content {
     var name: String? = nil
     var title: String
     var previewUrl: String?
+    var medium_url: String? = nil
     var coverUrl: String?
     var textLink: String?
     var description: String?
@@ -23,7 +24,7 @@ struct SectionDTO: Content {
     var bookTemplate: String
 
     enum CodingKeys: String, CodingKey {
-        case id, parentId, link_name, name, title, previewUrl, coverUrl, textLink, description, template, bookTemplate
+        case medium_url, id, parentId, link_name, name, title, previewUrl, coverUrl, textLink, description, template, bookTemplate
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -32,6 +33,7 @@ struct SectionDTO: Content {
         try c.encodeIfPresent(parentId, forKey: .parentId)
         try c.encodeIfPresent(link_name, forKey: .link_name)
         try c.encode(title, forKey: .title)
+        try c.encodeIfPresent(medium_url, forKey: .medium_url)
         try c.encodeIfPresent(previewUrl, forKey: .previewUrl)
         try c.encodeIfPresent(coverUrl, forKey: .coverUrl)
         try c.encodeIfPresent(textLink, forKey: .textLink)
@@ -49,9 +51,10 @@ struct SectionDTO: Content {
                             textLink: self.textLink,
                             description: self.description,
                             template: self.template,
-                            bookTemplate: self.bookTemplate)
-                
-        model.previewUrl = self.previewUrl
+                            bookTemplate: self.bookTemplate,
+                            previewUrl: self.previewUrl,
+                            mediumUrl: self.medium_url)
+
         return model
     }
 }
@@ -64,6 +67,7 @@ extension Section {
             link_name: self.linkName,
             title: self.$title.value ?? "",
             previewUrl: self.previewUrl,
+            medium_url: self.mediumUrl,
             coverUrl: self.$coverUrl.value,
             textLink: self.$textLink.value,
             description: self.$description.value,

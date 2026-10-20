@@ -19,6 +19,7 @@ struct ChapterDTO: Content {
     var duration: Int32?
     var coverUrl: String?
     var previewUrl: String?
+    var medium_url: String? = nil
     var publishDate: TimeInterval?
     var link: String?
     var description: String?
@@ -34,7 +35,8 @@ struct ChapterDTO: Content {
                             duration: self.duration,
                             link: self.link,
                             description: self.description,
-                            publishDate: Date(timeIntervalSince1970: self.publishDate ?? 0))
+                            publishDate: Date(timeIntervalSince1970: self.publishDate ?? 0),
+                            mediumUrl: self.medium_url)
         return model
     }
 }
@@ -49,6 +51,7 @@ extension Chapter {
                           duration: self.duration,
                           coverUrl: self.coverUrl,
                           previewUrl: self.previewUrl,
+                          medium_url: self.mediumUrl,
                           publishDate: self.publishDate?.timeIntervalSince1970,
                           link: self.link,
                           description: self.description,
@@ -56,6 +59,7 @@ extension Chapter {
     }
     
     func update(with dto: ChapterDTO) {
+        if let url = dto.medium_url { self.mediumUrl = url }
         self.title = dto.title
         self.mediaUrl = dto.mediaUrl
         if let duration = dto.duration {

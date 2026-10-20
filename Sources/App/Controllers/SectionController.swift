@@ -102,6 +102,7 @@ struct SectionController: RouteCollection {
         // Renaming without media fields keeps the existing S3 links.
         if let url = updatedSection.coverUrl { section.coverUrl = url }
         if let url = updatedSection.previewUrl { section.previewUrl = url }
+        if let url = updatedSection.medium_url { section.mediumUrl = url }
         section.textLink = updatedSection.textLink ?? ""
         section.description = updatedSection.description ?? ""
         section.template = updatedSection.template

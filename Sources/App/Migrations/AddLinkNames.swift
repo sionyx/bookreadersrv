@@ -65,8 +65,8 @@ struct AddLinkNames: AsyncMigration {
 private final class LegacySectionLink: Model, @unchecked Sendable {
     static let schema = Section.schema
     @ID(key: .id) var id: UUID?
-    @OptionalField(key: "name") var name: String?
-    @OptionalField(key: "link_name") var linkName: String?
+    @Field(key: "name") var name: String?
+    @Field(key: "link_name") var linkName: String?
     init() {}
 }
 private final class LegacyAuthorLink: Model, @unchecked Sendable {
@@ -74,13 +74,13 @@ private final class LegacyAuthorLink: Model, @unchecked Sendable {
     @ID(key: .id) var id: UUID?
     @Field(key: "first_name") var firstName: String
     @Field(key: "last_name") var lastName: String
-    @OptionalField(key: "link_name") var linkName: String?
+    @Field(key: "link_name") var linkName: String?
     init() {}
 }
 private final class LegacyBookLink: Model, @unchecked Sendable {
     static let schema = Book.schema
     @ID(key: .id) var id: UUID?
     @Field(key: "title") var title: String
-    @OptionalField(key: "link_name") var linkName: String?
+    @Field(key: "link_name") var linkName: String?
     init() {}
 }

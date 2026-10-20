@@ -83,6 +83,7 @@ struct UserController: RouteCollection {
         // Renaming without media fields keeps the existing S3 links.
         if let url = updatedUser.photoUrl { user.photoUrl = url }
         if let url = updatedUser.previewUrl { user.previewUrl = url }
+        if let url = updatedUser.medium_url { user.mediumUrl = url }
         user.link = updatedUser.link ?? ""
         user.description = updatedUser.description ?? ""
         if let pass = updatedUser.pass,

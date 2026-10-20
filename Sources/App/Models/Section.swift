@@ -31,8 +31,11 @@ final class Section: LinkNamedModel, @unchecked Sendable {
     @Field(key: "cover_url")
     var coverUrl: String
 
-    @OptionalField(key: "preview_url")
+    @Field(key: "preview_url")
     var previewUrl: String?
+
+    @Field(key: "medium_url")
+    var mediumUrl: String?
 
     @Field(key: "text_link")
     var textLink: String
@@ -49,7 +52,7 @@ final class Section: LinkNamedModel, @unchecked Sendable {
 
     init() { }
 
-    init(id: UUID? = nil, parentID: Section.IDValue? = nil, name: String, title: String, coverUrl: String?, textLink: String?, description: String?, template: String?, bookTemplate: String?) {
+    init(id: UUID? = nil, parentID: Section.IDValue? = nil, name: String, title: String, coverUrl: String?, textLink: String?, description: String?, template: String?, bookTemplate: String?, previewUrl: String? = nil, mediumUrl: String? = nil) {
         self.id = id
         self.$parent.id = parentID
         self.linkName = name
@@ -59,5 +62,7 @@ final class Section: LinkNamedModel, @unchecked Sendable {
         self.description = description ?? ""
         self.template = template ?? ""
         self.bookTemplate = bookTemplate ?? ""
+        self.previewUrl = previewUrl
+        self.mediumUrl = mediumUrl
     }
 }

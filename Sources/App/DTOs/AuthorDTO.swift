@@ -16,6 +16,7 @@ struct AuthorDTO: Content {
     var firstName: String?
     var lastName: String?
     var previewUrl: String?
+    var medium_url: String? = nil
     var photoUrl: String?
     var link: String?
     var description: String?
@@ -26,10 +27,11 @@ struct AuthorDTO: Content {
                            lastName: self.lastName ?? "",
                            photoUrl: self.photoUrl,
                            link: self.link,
-                           description: self.description)
-        
-        model.linkName = self.link_name ?? ""
-        model.previewUrl = self.previewUrl
+                           description: self.description,
+                           linkName: self.link_name ?? "",
+                           previewUrl: self.previewUrl,
+                           mediumUrl: self.medium_url)
+
         return model
     }
 }
@@ -42,6 +44,7 @@ extension Author {
             firstName: self.$firstName.value,
             lastName: self.$lastName.value,
             previewUrl: self.previewUrl,
+            medium_url: self.mediumUrl,
             photoUrl: self.$photoUrl.value,
             link: self.$link.value,
             description: self.$description.value

@@ -129,6 +129,7 @@ struct BookController: RouteCollection {
         book.duration = 0
         book.mediaUrl = ""
         book.previewUrl = updatedBook.previewUrl
+        if let url = updatedBook.medium_url { book.mediumUrl = url }
         book.coverUrl = updatedBook.coverUrl
         book.textLink = updatedBook.textLink
         book.description = updatedBook.description

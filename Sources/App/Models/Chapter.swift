@@ -36,6 +36,9 @@ final class Chapter: Model, @unchecked Sendable {
     @Field(key: "preview_url")
     var previewUrl: String?
 
+    @Field(key: "medium_url")
+    var mediumUrl: String?
+
     @Field(key: "media_url")
     var mediaUrl: String
 
@@ -53,7 +56,7 @@ final class Chapter: Model, @unchecked Sendable {
     
     init() { }
 
-    init(id: UUID? = nil, bookID: Book.IDValue, title: String, coverUrl: String? = nil, previewUrl: String? = nil, mediaUrl: String, duration: Int32? = nil, link: String? = nil, description: String? = nil, publishDate: Date? = nil, createDate: Date? = nil, updateDate: Date? = nil, deleteDate: Date? = nil) {
+    init(id: UUID? = nil, bookID: Book.IDValue, title: String, coverUrl: String? = nil, previewUrl: String? = nil, mediaUrl: String, duration: Int32? = nil, link: String? = nil, description: String? = nil, publishDate: Date? = nil, createDate: Date? = nil, updateDate: Date? = nil, deleteDate: Date? = nil, mediumUrl: String? = nil) {
         self.id = id
         self.createDate = createDate
         self.updateDate = updateDate
@@ -67,6 +70,7 @@ final class Chapter: Model, @unchecked Sendable {
         self.publishDate = publishDate
         self.link = link ?? ""
         self.description = description ?? ""
+        self.mediumUrl = mediumUrl
     }
 }
 

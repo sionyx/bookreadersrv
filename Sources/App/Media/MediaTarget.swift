@@ -123,29 +123,29 @@ enum MediaTarget: Sendable {
 
     var urls: [String] {
         switch self {
-        case .author(let m, _): return [m.photoUrl, m.previewUrl ?? ""].filter { !$0.isEmpty }
-        case .user(let m, _): return [m.photoUrl, m.previewUrl ?? ""].filter { !$0.isEmpty }
-        case .section(let m, _): return [m.coverUrl, m.previewUrl ?? ""].filter { !$0.isEmpty }
-        case .book(let m, _): return [m.coverUrl, m.previewUrl ?? ""].filter { !$0.isEmpty }
+        case .author(let m, _): return [m.photoUrl, m.previewUrl ?? "", m.mediumUrl ?? ""].filter { !$0.isEmpty }
+        case .user(let m, _): return [m.photoUrl, m.previewUrl ?? "", m.mediumUrl ?? ""].filter { !$0.isEmpty }
+        case .section(let m, _): return [m.coverUrl, m.previewUrl ?? "", m.mediumUrl ?? ""].filter { !$0.isEmpty }
+        case .book(let m, _): return [m.coverUrl, m.previewUrl ?? "", m.mediumUrl ?? ""].filter { !$0.isEmpty }
         case .chapter(let m, _, true): return [m.mediaUrl].filter { !$0.isEmpty }
-        case .chapter(let m, _, false): return [m.coverUrl ?? "", m.previewUrl ?? ""].filter { !$0.isEmpty }
+        case .chapter(let m, _, false): return [m.coverUrl ?? "", m.previewUrl ?? "", m.mediumUrl ?? ""].filter { !$0.isEmpty }
         }
     }
 
-    func save(primary: String?, preview: String?, on database: any Database) async throws {
+    func save(primary: String?, preview: String?, medium: String? = nil, on database: any Database) async throws {
         switch self {
         case .author(let m, _):
-            m.photoUrl = primary ?? ""; m.previewUrl = preview; try await m.save(on: database)
+            m.photoUrl = primary ?? ""; m.previewUrl = preview; m.mediumUrl = medium; try await m.save(on: database)
         case .user(let m, _):
-            m.photoUrl = primary ?? ""; m.previewUrl = preview; try await m.save(on: database)
+            m.photoUrl = primary ?? ""; m.previewUrl = preview; m.mediumUrl = medium; try await m.save(on: database)
         case .section(let m, _):
-            m.coverUrl = primary ?? ""; m.previewUrl = preview; try await m.save(on: database)
+            m.coverUrl = primary ?? ""; m.previewUrl = preview; m.mediumUrl = medium; try await m.save(on: database)
         case .book(let m, _):
-            m.coverUrl = primary ?? ""; m.previewUrl = preview; try await m.save(on: database)
+            m.coverUrl = primary ?? ""; m.previewUrl = preview; m.mediumUrl = medium; try await m.save(on: database)
         case .chapter(let m, _, true):
             m.mediaUrl = primary ?? ""; try await m.save(on: database)
         case .chapter(let m, _, false):
-            m.coverUrl = primary; m.previewUrl = preview; try await m.save(on: database)
+            m.coverUrl = primary; m.previewUrl = preview; m.mediumUrl = medium; try await m.save(on: database)
         }
     }
 }

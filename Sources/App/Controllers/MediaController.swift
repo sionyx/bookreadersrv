@@ -63,7 +63,7 @@ struct MediaController: RouteCollection {
                 _ = try ImageProcessor.imageFormat(source)
                 return try ImageProcessor.process(source: source, directory: directory)
             }.get()
-            files = [(images.0, ".png", "image/png"), (images.1, "_mini.jpg", "image/jpeg")]
+            files = [(images.0, ".png", "image/png"), (images.1, "_mini.jpg", "image/jpeg"), (images.2, "_medium.webp", "image/webp")]
         }
         let mutation = MediaMutation(storage: storage, directory: directory)
         do {
@@ -79,10 +79,11 @@ struct MediaController: RouteCollection {
                         try await mutation.put(file: file.0, key: keys[index], type: file.2)
                     }
                     let primary = storage.url(for: keys[0])
-                    let preview = keys.count == 2 ? storage.url(for: keys[1]) : nil
-                    try await target.save(primary: primary, preview: preview, on: database)
+                    let preview = keys.count >= 2 ? storage.url(for: keys[1]) : nil
+                    let medium = keys.count == 3 ? storage.url(for: keys[2]) : nil
+                    try await target.save(primary: primary, preview: preview, medium: medium, on: database)
                     for key in oldKeys.subtracting(keys) { try await mutation.remove(key: key) }
-                    return MediaResponse(success: true, url: primary, previewUrl: preview)
+                    return MediaResponse(success: true, url: primary, previewUrl: preview, medium_url: medium)
                 } catch {
                     try await mutation.restore(orThrow: error)
                     throw error
@@ -112,7 +113,7 @@ struct MediaController: RouteCollection {
                 }
                 try await mutation.snapshot(keys: keys)
                 do {
-                    // Either image URL deletes the complete pair. Audio deletes one object.
+                    // Either image URL deletes the complete image set. Audio deletes one object.
                     for key in keys { try await mutation.remove(key: key) }
                     try await target.save(primary: nil, preview: nil, on: database)
                     return MediaResponse(success: true, url: nil, previewUrl: nil)
@@ -186,11 +187,12 @@ struct MediaResponse: Content {
     let success: Bool
     let url: String?
     let previewUrl: String?
+    var medium_url: String? = nil
 }
 
 /// One sequential mutation, never shared between requests. Backups allow compensating
 /// failed uploads/deletions and database writes; they are removed with the request directory.
-private final class MediaMutation: @unchecked Sendable {
+final class MediaMutation: @unchecked Sendable {
     enum Snapshot { case missing, file(URL) }
     let storage: MediaStorage
     let directory: URL

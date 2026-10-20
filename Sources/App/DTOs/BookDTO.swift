@@ -21,6 +21,7 @@ struct BookDTO: Content {
     var sectionId: Section.IDValue
     var title: String
     var previewUrl: String
+    var medium_url: String? = nil
     var coverUrl: String
     var textLink: String
     var description: String
@@ -40,9 +41,10 @@ struct BookDTO: Content {
                          textLink: self.textLink,
                          description: self.description,
                          publishDate: Date(timeIntervalSince1970: self.publishDate),
-                         template: self.template)
-                
-        model.linkName = self.link_name ?? ""
+                         template: self.template,
+                         linkName: self.link_name ?? "",
+                         mediumUrl: self.medium_url)
+
         return model
     }
 }
@@ -54,6 +56,7 @@ struct BookShortDTO: Content {
     var section: String
     var title: String
     var previewUrl: String
+    var medium_url: String? = nil
 }
 
 struct BookDetailsDTO: Content {
@@ -64,6 +67,7 @@ struct BookDetailsDTO: Content {
     var section: SectionDTO
     var title: String
     var previewUrl: String
+    var medium_url: String? = nil
     var coverUrl: String
     var textLink: String?
     var description: String?
@@ -101,6 +105,7 @@ extension Book {
             sectionId: self.$section.id,
             title: self.$title.value ?? "",
             previewUrl: self.previewUrl ?? "",
+            medium_url: self.mediumUrl,
             coverUrl: self.$coverUrl.value ?? "",
             textLink: self.$textLink.value ?? "",
             description: self.$description.value ?? "",
@@ -118,7 +123,8 @@ extension Book {
             user: self.user.login,
             section: sectionTitle ?? self.section.title,
             title: self.title,
-            previewUrl: self.previewUrl ?? ""
+            previewUrl: self.previewUrl ?? "",
+            medium_url: self.mediumUrl
         )
     }
     
@@ -131,6 +137,7 @@ extension Book {
             section: self.section.toDTO(),
             title: self.$title.value ?? "",
             previewUrl: self.previewUrl ?? "",
+            medium_url: self.mediumUrl,
             coverUrl: self.$coverUrl.value ?? "",
             textLink: self.$textLink.value?.nilIfEmpty(),
             description: self.$description.value?.nilIfEmpty(),

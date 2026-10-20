@@ -8,7 +8,7 @@ import UniformTypeIdentifiers
 
 struct ImageProcessor {
     /// Runs on the application's blocking thread pool, never on an event loop.
-    static func process(source: URL, directory: URL) throws -> (URL, URL) {
+    static func process(source: URL, directory: URL) throws -> (URL, URL, URL) {
         let base = directory.appendingPathComponent("image.png")
         let mini = directory.appendingPathComponent("image_mini.jpg")
         #if canImport(ImageIO) && !MEDIA_USE_IMAGEMAGICK
@@ -66,7 +66,29 @@ struct ImageProcessor {
         try convert(executable, arguments: ["PNG:\(base.path)", "-resize", "96x96^", "-gravity", "center", "-extent", "96x96", "-background", "white", "-alpha", "remove",
                                             "-alpha", "off", "-strip", "-quality", "80", "JPEG:\(mini.path)"])
         #endif
-        return (base, mini)
+        let medium = try processMedium(source: source, directory: directory)
+        return (base, mini, medium)
+    }
+
+    /// Crop the oriented original before resizing, including upscaling small sources.
+    static func processMedium(source: URL, directory: URL) throws -> URL {
+        let output = directory.appendingPathComponent("image_medium.webp")
+        let executable = Environment.get("MEDIA_IMAGE_CONVERTER") ?? "/usr/bin/convert"
+        let format = try imageFormat(source)
+        let input = "\(format):\(source.path)[0]"
+        let limits = ["-limit", "memory", "128MiB", "-limit", "map", "256MiB",
+                      "-limit", "disk", "512MiB", "-limit", "time", "60"]
+        let dimensions = try convert(executable, arguments: limits + ["-ping", input,
+            "-format", "%w %h", "info:"], capture: true).split(separator: " ").compactMap { Int($0) }
+        guard dimensions.count == 2, dimensions.allSatisfy({ $0 > 0 && $0 <= 20_000 }),
+              Int64(dimensions[0]) * Int64(dimensions[1]) <= 100_000_000 else {
+            throw Abort(.unprocessableEntity, reason: "Image exceeds processing limits")
+        }
+        let side = min(dimensions[0], dimensions[1])
+        try convert(executable, arguments: limits + [input, "-auto-orient", "-gravity", "center",
+            "-crop", "\(side)x\(side)+0+0", "+repage", "-resize", "512x512!", "-background", "white",
+            "-alpha", "remove", "-alpha", "off", "-strip", "-quality", "80", "WEBP:\(output.path)"])
+        return output
     }
 
     static func imageFormat(_ url: URL) throws -> String {
@@ -90,7 +112,7 @@ struct ImageProcessor {
             throw Abort(.internalServerError, reason: "Cannot write image file")
         }
     }
-    #else
+    #endif
     @discardableResult
     private static func convert(_ executable: String, arguments: [String], capture: Bool = false) throws -> String {
         let process = Process()
@@ -109,5 +131,4 @@ struct ImageProcessor {
         }
         return String(decoding: result, as: UTF8.self)
     }
-    #endif
 }

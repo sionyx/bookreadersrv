@@ -32,6 +32,8 @@ public func configure(_ app: Application) async throws {
     app.migrations.add(AddMediaPreviews())
     app.migrations.add(AddChapterDuration())
     app.migrations.add(AddLinkNames())
+    app.migrations.add(AddMediumImages())
+    app.asyncCommands.use(BackfillMediumImages(), as: "backfill-medium-images")
 
     app.mediaStorage = try MediaStorage()
     app.lifecycle.use(MediaStorageLifecycle())

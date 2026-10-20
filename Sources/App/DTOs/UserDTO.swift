@@ -16,6 +16,7 @@ struct UserDTO: Content {
     var login: String?
     var pass: String?
     var previewUrl: String?
+    var medium_url: String? = nil
     var photoUrl: String?
     var link: String?
     var description: String?
@@ -29,9 +30,10 @@ struct UserDTO: Content {
                          description: self.description,
                          createDate: self.createDate,
                          updateDate: self.updateDate,
-                         deleteDate: self.deleteDate)
-        
-        model.previewUrl = self.previewUrl
+                         deleteDate: self.deleteDate,
+                         previewUrl: self.previewUrl,
+                         mediumUrl: self.medium_url)
+
         return model
     }
 }
@@ -46,6 +48,7 @@ extension User {
             login: self.$login.value,
             pass: nil,
             previewUrl: self.previewUrl,
+            medium_url: self.mediumUrl,
             photoUrl: self.$photoUrl.value,
             link: self.$link.value,
             description: self.$description.value

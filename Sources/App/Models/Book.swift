@@ -48,6 +48,9 @@ final class Book: LinkNamedModel, @unchecked Sendable {
     @Field(key: "preview_url")
     var previewUrl: String?
 
+    @Field(key: "medium_url")
+    var mediumUrl: String?
+
     @Field(key: "cover_url")
     var coverUrl: String
 
@@ -78,8 +81,8 @@ final class Book: LinkNamedModel, @unchecked Sendable {
 
     init() { }
 
-    init(id: UUID? = nil, userID: User.IDValue, authorID: Author.IDValue, sectionID: Section.IDValue, title: String, previewUrl: String, coverUrl: String, textLink: String, description: String, publishDate: Date, template: String) {
-        self.linkName = ""
+    init(id: UUID? = nil, userID: User.IDValue, authorID: Author.IDValue, sectionID: Section.IDValue, title: String, previewUrl: String, coverUrl: String, textLink: String, description: String, publishDate: Date, template: String, linkName: String = "", mediumUrl: String? = nil) {
+        self.linkName = linkName
         self.id = id
         self.$user.id = userID
         self.title = title
@@ -93,6 +96,7 @@ final class Book: LinkNamedModel, @unchecked Sendable {
         self.description = description
         self.publishDate = publishDate
         self.template = template
+        self.mediumUrl = mediumUrl
     }
 }
 
