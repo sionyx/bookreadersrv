@@ -26,7 +26,13 @@ struct InfoController: RouteCollection {
 
     @Sendable
     func books(req: Request) async throws -> InfoDTO {
-        try await Book.resolve(req.parameters.get("book"), on: req.db).toInfoDTO()
+        let book = try await Book.matching(req.parameters.get("book"), on: req.db)
+            .with(\.$roles) { role in role.with(\.$author) }
+            .first()
+        guard let book else {
+            throw Abort(.notFound)
+        }
+        return book.toInfoDTO()
     }
 
     @Sendable
