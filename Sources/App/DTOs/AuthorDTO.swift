@@ -11,6 +11,8 @@ import Vapor
 
 struct AuthorDTO: Content {
     var id: UUID?
+    var link_name: String? = nil
+    var books: [BookShortDTO]? = nil
     var firstName: String?
     var lastName: String?
     var previewUrl: String?
@@ -26,6 +28,7 @@ struct AuthorDTO: Content {
                            link: self.link,
                            description: self.description)
         
+        model.linkName = self.link_name ?? ""
         model.previewUrl = self.previewUrl
         return model
     }
@@ -35,6 +38,7 @@ extension Author {
     func toDTO() -> AuthorDTO {
         .init(
             id: self.id,
+            link_name: self.linkName,
             firstName: self.$firstName.value,
             lastName: self.$lastName.value,
             previewUrl: self.previewUrl,

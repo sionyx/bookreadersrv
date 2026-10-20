@@ -8,7 +8,7 @@
 import Fluent
 import struct Foundation.UUID
 
-final class Author: Model, @unchecked Sendable {
+final class Author: LinkNamedModel, @unchecked Sendable {
     static let schema = "authors"
     
     @ID(key: .id)
@@ -35,9 +35,13 @@ final class Author: Model, @unchecked Sendable {
     @Siblings(through: Role.self, from: \.$author, to: \.$book)
     var books: [Book]
     
+    @Field(key: "link_name")
+    var linkName: String
+
     init() { }
 
     init(id: UUID? = nil, firstName: String, lastName: String, photoUrl: String? = nil, link: String? = nil, description: String? = nil) {
+        self.linkName = ""
         self.id = id
         self.firstName = firstName
         self.lastName = lastName

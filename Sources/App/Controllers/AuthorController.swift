@@ -28,11 +28,12 @@ struct AuthorController: RouteCollection {
     
     @Sendable
     func one(req: Request) async throws -> AuthorDTO {
-        guard let author = try await Author.find(req.parameters.get("authorID"), on: req.db) else {
-            throw Abort(.notFound)
-        }
+        let author = try await Author.resolve(req.parameters.get("authorID"), on: req.db)
         
-        return author.toDTO()
+        let books = try await booksByAuthor(author, on: req.db)
+        var dto = author.toDTO()
+        dto.books = books.map { $0.toShortDTO() }
+        return dto
     }
 
     @Sendable
@@ -70,18 +71,19 @@ struct AuthorController: RouteCollection {
 
     @Sendable
     func create(req: Request) async throws -> AuthorDTO {
-        let author = try req.content.decode(AuthorDTO.self).toModel()
+        let dto = try req.content.decode(AuthorDTO.self)
+        let author = dto.toModel()
+        try await author.assignLinkName(dto.link_name, source: "\(author.firstName) \(author.lastName)", on: req.db)
 
-        try await author.save(on: req.db)
+        try await author.saveWithLinkName(on: req.db)
         return author.toDTO()
     }
     
     @Sendable
     func update(req: Request) async throws -> AuthorDTO {
-        guard let author = try await Author.find(req.parameters.get("authorID"), on: req.db) else {
-            throw Abort(.notFound)
-        }
+        let author = try await Author.resolve(req.parameters.get("authorID"), on: req.db)
         let updatedAuthor = try req.content.decode(AuthorDTO.self)
+        try await author.assignLinkName(updatedAuthor.link_name, source: "\(updatedAuthor.firstName ?? "") \(updatedAuthor.lastName ?? "")", on: req.db)
         author.firstName = updatedAuthor.firstName ?? ""
         author.lastName = updatedAuthor.lastName ?? ""
         // Renaming without media fields keeps the existing S3 links.
@@ -90,15 +92,13 @@ struct AuthorController: RouteCollection {
         author.link = updatedAuthor.link ?? ""
         author.description = updatedAuthor.description ?? ""
         
-        try await author.save(on: req.db)
+        try await author.saveWithLinkName(on: req.db)
         return author.toDTO()
     }
 
     @Sendable
     func delete(req: Request) async throws -> HTTPStatus {
-        guard let author = try await Author.find(req.parameters.get("authorID"), on: req.db) else {
-            throw Abort(.notFound)
-        }
+        let author = try await Author.resolve(req.parameters.get("authorID"), on: req.db)
 
         try await author.delete(on: req.db)
         return .ok

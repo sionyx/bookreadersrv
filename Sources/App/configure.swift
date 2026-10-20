@@ -31,6 +31,7 @@ public func configure(_ app: Application) async throws {
     app.migrations.add(CreateChapter())
     app.migrations.add(AddMediaPreviews())
     app.migrations.add(AddChapterDuration())
+    app.migrations.add(AddLinkNames())
 
     app.mediaStorage = try MediaStorage()
     app.lifecycle.use(MediaStorageLifecycle())

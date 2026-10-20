@@ -242,7 +242,7 @@
                                     "actions": [
                                         {
                                             "log_id": "button_pressed",
-                                            "url": "navigate://page?title=&url=#(baseUrl)/app/books/E740F417-7352-4F8D-9DAF-A51D6AA98994"
+                                            "url": "navigate://page?title=&url=#(baseUrl)#(featuredLinks.item1)"
                                         }
                                     ]
                                 },
@@ -254,7 +254,7 @@
                                     "actions": [
                                         {
                                             "log_id": "button_pressed",
-                                            "url": "navigate://page?title=&url=#(baseUrl)/app/books/5EA6D77D-95E3-441E-A4C6-C26B10A5C0B6"
+                                            "url": "navigate://page?title=&url=#(baseUrl)#(featuredLinks.item2)"
                                         }
                                     ]
                                 },
@@ -266,7 +266,7 @@
                                     "actions": [
                                         {
                                             "log_id": "button_pressed",
-                                            "url": "navigate://page?title=&url=#(baseUrl)/app/books/63A78E52-F82C-4281-A031-D889E443A697"
+                                            "url": "navigate://page?title=&url=#(baseUrl)#(featuredLinks.item3)"
                                         }
                                     ]
                                 },
@@ -294,7 +294,7 @@
                                     "actions": [
                                         {
                                             "log_id": "button_pressed",
-                                            "url": "navigate://page?title=&url=#(baseUrl)/app/books/3B11DCE7-3E1C-4FED-9212-DCA2A0401B52"
+                                            "url": "navigate://page?title=&url=#(baseUrl)#(featuredLinks.item4)"
                                         }
                                     ]
                                 },
@@ -306,7 +306,7 @@
                                     "actions": [
                                         {
                                             "log_id": "button_pressed",
-                                            "url": "navigate://page?title=&url=#(baseUrl)/app/books/CF3207C6-220A-490E-9401-CA3CF757B3D7"
+                                            "url": "navigate://page?title=&url=#(baseUrl)#(featuredLinks.item5)"
                                         }
                                     ]
                                 },
@@ -322,7 +322,7 @@
                                     "actions": [
                                         {
                                             "log_id": "button_pressed",
-                                            "url": "navigate://page?title=&url=#(baseUrl)/app/authors/12BF57E6-B7BF-4648-9A50-8E1F463D8C20"
+                                            "url": "navigate://page?title=&url=#(baseUrl)#(featuredLinks.item6)"
                                         }
                                     ]
                                 },

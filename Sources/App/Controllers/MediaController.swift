@@ -26,13 +26,11 @@ struct MediaController: RouteCollection {
     private func upload(req: Request, kind: MediaKind) async throws -> MediaResponse {
         let storage = req.application.mediaStorage
         try storage.validateConfiguration()
-        guard req.parameters.get(kind.parameter).flatMap(UUID.init(uuidString:)) != nil else {
-            throw Abort(.badRequest, reason: "Invalid \(kind.parameter)")
-        }
+        _ = try await kind.identifier(req: req, database: req.db)
         if kind == .chapterAudio || kind == .chapterImage {
-            guard req.parameters.get("bookID").flatMap(UUID.init(uuidString:)) != nil,
-                  let number = try req.query.decode(MediaQuery.self).chapterNumber, number > 0 else {
-                throw Abort(.badRequest, reason: "Valid bookID and positive chapterNumber are required")
+            _ = try await Book.resolve(req.parameters.get("bookID"), on: req.db)
+            guard let number = try req.query.decode(MediaQuery.self).chapterNumber, number > 0 else {
+                throw Abort(.badRequest, reason: "Positive chapterNumber is required")
             }
         }
         let type = req.headers.first(name: .contentType)?.split(separator: ";").first?

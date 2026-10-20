@@ -600,7 +600,7 @@
                                     "actions": [
                                         {
                                             "log_id": "button_pressed",
-                                            "url": "navigate://page?title=#(role.author.lastName)&url=#(baseUrl)/app/authors/#(role.author.id)"
+                                            "url": "navigate://page?title=#(role.author.lastName)&url=#(baseUrl)/app/authors/#(role.author.link_name)"
                                         }
                                     ]                                    
                                 },
@@ -613,7 +613,7 @@
                                     "actions": [
                                         {
                                             "log_id": "listen",
-                                            "url": "navigate://page?title=#(book.title)&present=fullscreen&url=#(baseUrl)/app/player/#(book.id)"
+                                            "url": "navigate://page?title=#(book.title)&present=fullscreen&url=#(baseUrl)/app/player/#(book.link_name)"
                                         }
                                     ]
                                 },
@@ -648,7 +648,7 @@
                                             "actions": [
                                                 {
                                                     "log_id": "button_pressed",
-                                                    "url": "navigate://page?title=#(book.title)&url=#(baseUrl)/app/books/#(book.id)"
+                                                    "url": "navigate://page?title=#(book.title)&url=#(baseUrl)/app/books/#(book.link_name)"
                                                 }
                                             ]
                                         },
@@ -661,7 +661,7 @@
                                             "actions": [
                                                 {
                                                     "log_id": "button_pressed",
-                                                    "url": "navigate://page?title=#(section.title)&url=#(baseUrl)/app/authors/#(book.authorId)"
+                                                    "url": "navigate://page?title=#(section.title)&url=#(baseUrl)/app/authors/#(book.author_link_name)"
                                                 }
                                             ]
                                         }                                
@@ -686,7 +686,7 @@
                                             "actions": [
                                                 {
                                                     "log_id": "button_pressed",
-                                                    "url": "navigate://page?title=#(book.title)&url=#(baseUrl)/app/books/#(book.id)"
+                                                    "url": "navigate://page?title=#(book.title)&url=#(baseUrl)/app/books/#(book.link_name)"
                                                 }
                                             ]
                                         },
@@ -700,7 +700,7 @@
                                             "actions": [
                                                 {
                                                     "log_id": "button_pressed",
-                                                    "url": "navigate://page?title=#(book.sectionTitle)&url=#(baseUrl)/app/sections/#(book.sectionName)"
+                                                    "url": "navigate://page?title=#(book.sectionTitle)&url=#(baseUrl)/app/sections/#(book.section.link_name)"
                                                 }
                                             ]
                                         }                                

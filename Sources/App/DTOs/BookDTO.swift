@@ -10,10 +10,13 @@ import Vapor
 
 struct BookDTO: Content {
     var id: UUID?
+    var link_name: String? = nil
     var createDate: TimeInterval?
     var updateDate: TimeInterval?
     var deleteDate: TimeInterval?
     var userId: User.IDValue
+    var author_link_name: String? = nil
+    var section_link_name: String? = nil
     var authorId: Author.IDValue
     var sectionId: Section.IDValue
     var title: String
@@ -39,12 +42,14 @@ struct BookDTO: Content {
                          publishDate: Date(timeIntervalSince1970: self.publishDate),
                          template: self.template)
                 
+        model.linkName = self.link_name ?? ""
         return model
     }
 }
 
 struct BookShortDTO: Content {
     var id: UUID?
+    var link_name: String? = nil
     var user: String
     var section: String
     var title: String
@@ -52,7 +57,9 @@ struct BookShortDTO: Content {
 }
 
 struct BookDetailsDTO: Content {
+    var author_link_name: String? = nil
     var id: UUID?
+    var link_name: String? = nil
     var user: UserDTO
     var section: SectionDTO
     var title: String
@@ -83,10 +90,13 @@ extension Book {
     func toDTO() -> BookDTO {
         BookDTO(
             id: self.id,
+            link_name: self.linkName,
             createDate: self.createDate?.timeIntervalSince1970,
             updateDate: self.updateDate?.timeIntervalSince1970,
             deleteDate: self.deleteDate?.timeIntervalSince1970,
             userId: self.$user.id,
+            author_link_name: self.$author.value?.linkName,
+            section_link_name: self.$section.value?.linkName,
             authorId: self.$author.id,
             sectionId: self.$section.id,
             title: self.$title.value ?? "",
@@ -104,6 +114,7 @@ extension Book {
     func toShortDTO(authorFirstName: String? = nil, authorLastName: String? = nil, sectionTitle: String? = nil) -> BookShortDTO {
         BookShortDTO(
             id: self.id,
+            link_name: self.linkName,
             user: self.user.login,
             section: sectionTitle ?? self.section.title,
             title: self.title,
@@ -113,7 +124,9 @@ extension Book {
     
     func toDetailsDTO() -> BookDetailsDTO {
         BookDetailsDTO(
+            author_link_name: self.$author.value?.linkName,
             id: self.id,
+            link_name: self.linkName,
             user: self.user.toDTO(),
             section: self.section.toDTO(),
             title: self.$title.value ?? "",

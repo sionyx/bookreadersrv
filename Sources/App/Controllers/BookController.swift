@@ -20,6 +20,8 @@ struct BookController: RouteCollection {
     @Sendable
     func index(req: Request) async throws -> [BookDTO] {
         try await Book.query(on: req.db)
+            .with(\.$author)
+            .with(\.$section)
             .with(\.$roles) { role in
                 role.with(\.$author)
             }
@@ -30,13 +32,9 @@ struct BookController: RouteCollection {
 
     @Sendable
     func one(req: Request) async throws -> BookDTO {
-        guard let bookIdStr = req.parameters.get("bookID"),
-              let bookId = UUID(uuidString: bookIdStr) else {
-            throw Abort(.badRequest)
-        }
-        
-        let book = try await Book.query(on: req.db)
-            .filter(\.$id, .equal, bookId)
+        let book = try await Book.matching(req.parameters.get("bookID"), on: req.db)
+            .with(\.$author)
+            .with(\.$section)
             .with(\.$roles) { role in
                 role.with(\.$author)
             }
@@ -54,13 +52,14 @@ struct BookController: RouteCollection {
     func create(req: Request) async throws -> BookDTO {
         let bookDTO = try req.content.decode(BookDTO.self)
         let book = bookDTO.toModel()
+        try await book.assignLinkName(bookDTO.link_name, source: bookDTO.title, on: req.db)
 
         guard let authorId = bookDTO.roles?.first?.authorId else {
             throw Abort(.badRequest, reason: "Book has no author")
         }
         book.$author.id = authorId
 
-        try await book.save(on: req.db)
+        try await book.saveWithLinkName(on: req.db)
         let bookId = try book.requireID()
         
         if let roleDTOs = bookDTO.roles {
@@ -95,6 +94,8 @@ struct BookController: RouteCollection {
 
         let finaleBook = try await Book.query(on: req.db)
             .filter(\.$id, .equal, bookId)
+            .with(\.$author)
+            .with(\.$section)
             .with(\.$roles) { role in
                 role.with(\.$author)
             }
@@ -106,13 +107,9 @@ struct BookController: RouteCollection {
     
     @Sendable
     func update(req: Request) async throws -> BookDTO {
-        guard let bookIdStr = req.parameters.get("bookID"),
-              let bookId = UUID(uuidString: bookIdStr) else {
-            throw Abort(.badRequest)
-        }
-        
-        let book = try await Book.query(on: req.db)
-            .filter(\.$id, .equal, bookId)
+        let book = try await Book.matching(req.parameters.get("bookID"), on: req.db)
+            .with(\.$author)
+            .with(\.$section)
             .with(\.$roles) { role in
                 role.with(\.$author)
             }
@@ -122,7 +119,9 @@ struct BookController: RouteCollection {
             throw Abort(.notFound)
         }
 
+        let bookId = try book.requireID()
         let updatedBook = try req.content.decode(BookDTO.self)
+        try await book.assignLinkName(updatedBook.link_name, source: updatedBook.title, on: req.db)
         book.$author.id = updatedBook.authorId
         book.$section.id = updatedBook.sectionId
         book.$user.id = updatedBook.userId
@@ -135,7 +134,7 @@ struct BookController: RouteCollection {
         book.description = updatedBook.description
         book.publishDate = Date(timeIntervalSince1970: updatedBook.publishDate)
         book.template = updatedBook.template
-        try await book.save(on: req.db)
+        try await book.saveWithLinkName(on: req.db)
 
         if let roleDTOs = updatedBook.roles {
             for roleDTO in roleDTOs {
@@ -168,6 +167,8 @@ struct BookController: RouteCollection {
 
         let finaleBook = try await Book.query(on: req.db)
             .filter(\.$id, .equal, bookId)
+            .with(\.$author)
+            .with(\.$section)
             .with(\.$roles) { role in
                 role.with(\.$author)
             }
@@ -179,9 +180,7 @@ struct BookController: RouteCollection {
 
     @Sendable
     func delete(req: Request) async throws -> HTTPStatus {
-        guard let book = try await Book.find(req.parameters.get("bookID"), on: req.db) else {
-            throw Abort(.notFound)
-        }
+        let book = try await Book.resolve(req.parameters.get("bookID"), on: req.db)
         
         let bookId = try book.requireID()
         

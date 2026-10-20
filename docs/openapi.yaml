@@ -13,6 +13,19 @@ info:
     обновляются ссылки в базе. Оригиналы изображений, превью и аудио доступны
     для публичного чтения по прямым ссылкам, если политика хранилища это разрешает.
 
+    Для разделов, книг (включая сезоны подкастов) и авторов `link_name` —
+    канонический адресный идентификатор. Маршруты этих сущностей, метаданных,
+    серверных страниц и медиа принимают как `link_name`, так и прежний UUID.
+    UUID в `id` и полях связей сохранены для совместимости и изменения данных;
+    пользовательские ссылки нужно строить по `link_name`, `author_link_name`,
+    `section_link_name` и `roles[].author.link_name`, а не по UUID.
+    При создании без `link_name` адрес генерируется транслитерацией в нижний
+    регистр с дефисами; совпадения получают суффикс `-2`, `-3` и т. д.
+    При обновлении без `link_name` адрес сохраняется, даже если изменилось имя.
+    Явно заданный адрес проверяется и при конфликте возвращает HTTP 409.
+    Изменение адреса не создаёт перенаправление со старого link_name;
+    доступ по UUID сохраняется. Медиафайлы при изменении адреса не перемещаются.
+
     Поля `publishDate` в DTO книги и главы передаются как Unix time в секундах.
     Поля типа Swift `Date` кодируются HTTP-кодировщиком Vapor как строки ISO 8601
     в UTC без долей секунды. В частности, так передаётся `Chapter.createDate`.
@@ -658,6 +671,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+        '409':
+          $ref: '#/components/responses/LinkNameConflict'
   /api/sections/search:
     get:
       tags: [Sections]
@@ -746,6 +761,8 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+        '409':
+          $ref: '#/components/responses/LinkNameConflict'
     delete:
       tags: [Sections]
       operationId: deleteSection
@@ -799,6 +816,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+        '409':
+          $ref: '#/components/responses/LinkNameConflict'
   /api/authors/search:
     get:
       tags: [Authors]
@@ -831,14 +850,15 @@ paths:
     get:
       tags: [Authors]
       operationId: getAuthor
-      summary: Получить автора
+      summary: Получить автора и полный список его книг
+      description: Принимает link_name или UUID. books включает все книги с ролью этого автора, а также книги с основным authorId, без дублей. Ссылки строятся по books[].link_name.
       responses:
         '200':
           description: Автор
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Author'
+                $ref: '#/components/schemas/AuthorDetails'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -866,6 +886,8 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+        '409':
+          $ref: '#/components/responses/LinkNameConflict'
     delete:
       tags: [Authors]
       operationId: deleteAuthor
@@ -920,6 +942,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+        '409':
+          $ref: '#/components/responses/LinkNameConflict'
   /api/books/{bookID}:
     parameters:
       - $ref: '#/components/parameters/BookID'
@@ -967,6 +991,8 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+        '409':
+          $ref: '#/components/responses/LinkNameConflict'
     delete:
       tags: [Books]
       operationId: deleteBook
@@ -1226,9 +1252,9 @@ paths:
         - name: book
           in: path
           required: true
+          description: link_name или UUID.
           schema:
             type: string
-            format: uuid
       responses:
         '200':
           $ref: '#/components/responses/InfoResponse'
@@ -1246,9 +1272,9 @@ paths:
         - name: book
           in: path
           required: true
+          description: link_name или UUID.
           schema:
             type: string
-            format: uuid
       responses:
         '200':
           $ref: '#/components/responses/InfoResponse'
@@ -1266,7 +1292,7 @@ paths:
         - name: section
           in: path
           required: true
-          description: Человекочитаемое имя раздела (`name`), не UUID
+          description: link_name раздела или UUID
           schema:
             type: string
       responses:
@@ -1286,9 +1312,9 @@ paths:
         - name: author
           in: path
           required: true
+          description: link_name или UUID.
           schema:
             type: string
-            format: uuid
       responses:
         '200':
           $ref: '#/components/responses/InfoResponse'
@@ -1422,7 +1448,7 @@ paths:
         - name: sectionName
           in: path
           required: true
-          description: Человекочитаемое имя раздела (`name`)
+          description: link_name раздела или UUID
           schema:
             type: string
         - $ref: '#/components/parameters/XPlatform'
@@ -1444,9 +1470,9 @@ paths:
         - name: bookId
           in: path
           required: true
+          description: link_name или UUID.
           schema:
             type: string
-            format: uuid
         - $ref: '#/components/parameters/XPlatform'
         - $ref: '#/components/parameters/XBaseUrl'
       responses:
@@ -1468,9 +1494,9 @@ paths:
         - name: authorId
           in: path
           required: true
+          description: link_name или UUID.
           schema:
             type: string
-            format: uuid
         - $ref: '#/components/parameters/XPlatform'
         - $ref: '#/components/parameters/XBaseUrl'
       responses:
@@ -1490,9 +1516,9 @@ paths:
         - name: bookId
           in: path
           required: true
+          description: link_name или UUID.
           schema:
             type: string
-            format: uuid
         - $ref: '#/components/parameters/XPlatform'
         - $ref: '#/components/parameters/XBaseUrl'
       responses:
@@ -1553,23 +1579,23 @@ components:
       name: sectionID
       in: path
       required: true
+      description: link_name сущности или UUID для обратной совместимости.
       schema:
         type: string
-        format: uuid
     AuthorID:
       name: authorID
       in: path
       required: true
+      description: link_name сущности или UUID для обратной совместимости.
       schema:
         type: string
-        format: uuid
     BookID:
       name: bookID
       in: path
       required: true
+      description: link_name сущности или UUID для обратной совместимости.
       schema:
         type: string
-        format: uuid
     UserID:
       name: userID
       in: path
@@ -1609,6 +1635,12 @@ components:
         format: uri
 
   responses:
+    LinkNameConflict:
+      description: link_name занят или данные нарушают ограничение уникальности/связей.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
     MediaError:
       description: |
         Ошибка с текстовым reason. 400 — неверный ID, номер главы или URL;
@@ -1652,6 +1684,14 @@ components:
             type: string
 
   schemas:
+    LinkName:
+      type: string
+      minLength: 1
+      maxLength: 160
+      pattern: '^[a-z0-9]+([-_][a-z0-9]+)*$'
+      description: Уникальное внутри типа сущности короткое имя латиницей для URL. Разрешены нижний регистр, цифры, дефисы и подчёркивания. UUID и служебные имена search/path запрещены. При изменении названия автоматически не меняется.
+      example: vojna-i-mir
+
     MediaDeleteRequest:
       type: object
       required: [url]
@@ -1703,10 +1743,19 @@ components:
 
     Author:
       type: object
+      required: [link_name]
       properties:
+        link_name:
+          $ref: '#/components/schemas/LinkName'
         id:
           type: string
           format: uuid
+        books:
+          type: array
+          readOnly: true
+          description: Все неудалённые книги автора (включая соавторство и основного автора без роли), без пагинации и дублей; только в GET /api/authors/{authorID}. Каждая книга содержит link_name. Сортировка по publishDate, затем UUID.
+          items:
+            $ref: '#/components/schemas/BookShort'
         firstName:
           type: string
         lastName:
@@ -1722,6 +1771,7 @@ components:
           type: string
       example:
         id: 7f04819b-f03f-4aa5-a084-d830ea00cc20
+        link_name: lev-tolstoj
         firstName: Лев
         lastName: Толстой
         photoUrl: https://cdn.example.com/authors/tolstoy.jpg
@@ -1730,8 +1780,10 @@ components:
 
     AuthorWrite:
       type: object
-      description: Все поля DTO автора необязательны. При обновлении отсутствующие photoUrl и previewUrl сохраняют прежние ссылки; остальные отсутствующие строковые поля заменяются пустыми строками.
+      description: Все поля DTO автора необязательны. При обновлении отсутствующие photoUrl и previewUrl сохраняют прежние ссылки; link_name сохраняется, остальные отсутствующие строковые поля заменяются пустыми строками.
       properties:
+        link_name:
+          $ref: '#/components/schemas/LinkName'
         id:
           type: string
           format: uuid
@@ -1748,6 +1800,17 @@ components:
           type: string
         description:
           type: string
+
+    AuthorDetails:
+      allOf:
+        - $ref: '#/components/schemas/Author'
+        - type: object
+          required: [books]
+          properties:
+            books:
+              type: array
+              items:
+                $ref: '#/components/schemas/BookShort'
 
     AuthorPage:
       type: object
@@ -1838,17 +1901,16 @@ components:
 
     Section:
       type: object
-      required: [name, title, template, bookTemplate]
+      required: [link_name, title, template, bookTemplate]
       properties:
+        link_name:
+          $ref: '#/components/schemas/LinkName'
         id:
           type: string
           format: uuid
         parentId:
           type: string
           format: uuid
-        name:
-          type: string
-          description: Человекочитаемый идентификатор для URL
         title:
           type: string
         previewUrl:
@@ -1869,17 +1931,22 @@ components:
 
     SectionWrite:
       type: object
-      description: При обновлении отсутствующие coverUrl и previewUrl сохраняют прежние ссылки.
-      required: [name, title, template, bookTemplate]
+      description: При обновлении отсутствующие coverUrl и previewUrl сохраняют прежние ссылки. link_name необязателен (при создании генерируется из title, при обновлении сохраняется). Старое name принимается как входной псевдоним link_name, но не возвращается.
+      required: [title, template, bookTemplate]
       properties:
+        name:
+          type: string
+          deprecated: true
+          writeOnly: true
+          description: Совместимый входной псевдоним; link_name имеет приоритет.
+        link_name:
+          $ref: '#/components/schemas/LinkName'
         id:
           type: string
           format: uuid
         parentId:
           type: string
           format: uuid
-        name:
-          type: string
         title:
           type: string
         previewUrl:
@@ -2068,6 +2135,7 @@ components:
     Book:
       type: object
       required:
+        - link_name
         - userId
         - authorId
         - sectionId
@@ -2079,6 +2147,8 @@ components:
         - publishDate
         - template
       properties:
+        link_name:
+          $ref: '#/components/schemas/LinkName'
         id:
           type: string
           format: uuid
@@ -2097,6 +2167,16 @@ components:
         userId:
           type: string
           format: uuid
+        author_link_name:
+          allOf:
+            - $ref: '#/components/schemas/LinkName'
+          readOnly: true
+          description: Адрес основного автора; остальные авторы доступны в roles[].author.link_name.
+        section_link_name:
+          allOf:
+            - $ref: '#/components/schemas/LinkName'
+          readOnly: true
+          description: Адрес раздела книги.
         authorId:
           type: string
           format: uuid
@@ -2144,6 +2224,8 @@ components:
         - template
         - roles
       properties:
+        link_name:
+          $ref: '#/components/schemas/LinkName'
         id:
           type: string
           format: uuid
@@ -2197,6 +2279,8 @@ components:
         - publishDate
         - template
       properties:
+        link_name:
+          $ref: '#/components/schemas/LinkName'
         id:
           type: string
           format: uuid
@@ -2236,8 +2320,10 @@ components:
 
     BookShort:
       type: object
-      required: [user, section, title, previewUrl]
+      required: [link_name, user, section, title, previewUrl]
       properties:
+        link_name:
+          $ref: '#/components/schemas/LinkName'
         id:
           type: string
           format: uuid
@@ -2256,6 +2342,10 @@ components:
       type: object
       required: [title, description, previewUrl]
       properties:
+        link_name:
+          allOf:
+            - $ref: '#/components/schemas/LinkName'
+          description: Присутствует для книги, раздела и автора; отсутствует для пользователя.
         title:
           type: string
         description:

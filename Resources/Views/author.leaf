@@ -355,7 +355,7 @@
                                     "actions": [
                                         {
                                             "log_id": "button_pressed",
-                                            "url": "navigate://page?title=#(book.title)&present=fullscreen&url=#(baseUrl)/app/books/#(book.id)"
+                                            "url": "navigate://page?title=#(book.title)&present=fullscreen&url=#(baseUrl)/app/books/#(book.link_name)"
                                         }
                                     ]
                                 },

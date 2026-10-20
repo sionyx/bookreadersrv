@@ -12,7 +12,7 @@ import struct Foundation.UUID
 /// Property wrappers interact poorly with `Sendable` checking, causing a warning for the `@ID` property
 /// It is recommended you write your model with sendability checking on and then suppress the warning
 /// afterwards with `@unchecked Sendable`.
-final class Section: Model, @unchecked Sendable {
+final class Section: LinkNamedModel, @unchecked Sendable {
     static let schema = "sections"
     
     @ID(key: .id)
@@ -21,9 +21,9 @@ final class Section: Model, @unchecked Sendable {
     @OptionalParent(key: "section_id")
     var parent: Section?
     
-    // Name - readable id of section
-    @Field(key: "name")
-    var name: String
+    // Stable readable identifier used in URLs.
+    @Field(key: "link_name")
+    var linkName: String
 
     @Field(key: "title")
     var title: String
@@ -52,7 +52,7 @@ final class Section: Model, @unchecked Sendable {
     init(id: UUID? = nil, parentID: Section.IDValue? = nil, name: String, title: String, coverUrl: String?, textLink: String?, description: String?, template: String?, bookTemplate: String?) {
         self.id = id
         self.$parent.id = parentID
-        self.name = name
+        self.linkName = name
         self.title = title
         self.coverUrl = coverUrl ?? ""
         self.textLink = textLink ?? ""

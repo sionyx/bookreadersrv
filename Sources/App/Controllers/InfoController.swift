@@ -21,54 +21,19 @@ struct InfoController: RouteCollection {
     
     @Sendable
     func sections(req: Request) async throws -> InfoDTO {
-        guard let section = req.parameters.get("section") else {
-            throw Abort(.notFound)
-        }
-        
-        guard let info = try await Section
-            .query(on: req.db)
-            .filter(\.$name, .equal, section)
-            .first()?.toInfoDTO() else {
-            throw Abort(.notFound)
-        }
-        
-        return info
+        try await Section.resolve(req.parameters.get("section"), on: req.db).toInfoDTO()
     }
 
     @Sendable
     func books(req: Request) async throws -> InfoDTO {
-        guard let book = req.parameters.get("book"),
-              let bookId = UUID(uuidString: book) else {
-            throw Abort(.notFound)
-        }
-        
-        guard let info = try await Book
-            .query(on: req.db)
-            .filter(\.$id, .equal, bookId)
-            .first()?.toInfoDTO() else {
-            throw Abort(.notFound)
-        }
-        
-        return info
+        try await Book.resolve(req.parameters.get("book"), on: req.db).toInfoDTO()
     }
-    
+
     @Sendable
     func authors(req: Request) async throws -> InfoDTO {
-        guard let author = req.parameters.get("author"),
-              let authorId = UUID(uuidString: author) else {
-            throw Abort(.notFound)
-        }
-        
-        guard let info = try await Author
-            .query(on: req.db)
-            .filter(\.$id, .equal, authorId)
-            .first()?.toInfoDTO() else {
-            throw Abort(.notFound)
-        }
-        
-        return info
+        try await Author.resolve(req.parameters.get("author"), on: req.db).toInfoDTO()
     }
-    
+
     @Sendable
     func users(req: Request) async throws -> InfoDTO {
         guard let user = req.parameters.get("user") else {

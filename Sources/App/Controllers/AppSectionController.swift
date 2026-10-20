@@ -29,7 +29,27 @@ struct AppSectionController: RouteCollection {
             .all()
             .map { $0.toDTO() }
         
-        return try await req.view.render("root", SectionModel(title: "Каталог",
+        // Existing featured cards keep their entity IDs internally; navigation uses current link_name.
+        let featured: [(String, String, UUID)] = [
+            ("item1", "books", UUID(uuidString: "E740F417-7352-4F8D-9DAF-A51D6AA98994")!),
+            ("item2", "books", UUID(uuidString: "5EA6D77D-95E3-441E-A4C6-C26B10A5C0B6")!),
+            ("item3", "books", UUID(uuidString: "63A78E52-F82C-4281-A031-D889E443A697")!),
+            ("item4", "books", UUID(uuidString: "3B11DCE7-3E1C-4FED-9212-DCA2A0401B52")!),
+            ("item5", "books", UUID(uuidString: "CF3207C6-220A-490E-9401-CA3CF757B3D7")!),
+            ("item6", "authors", UUID(uuidString: "12BF57E6-B7BF-4648-9A50-8E1F463D8C20")!)
+        ]
+        let featuredBooks = try await Book.query(on: req.db)
+            .filter(\.$id ~~ featured.filter { $0.1 == "books" }.map { $0.2 }).all()
+        let featuredAuthors = try await Author.query(on: req.db)
+            .filter(\.$id ~~ featured.filter { $0.1 == "authors" }.map { $0.2 }).all()
+        var featuredLinks: [String: String] = [:]
+        for (key, kind, id) in featured {
+            let name = kind == "books" ? featuredBooks.first { $0.id == id }?.linkName
+                : featuredAuthors.first { $0.id == id }?.linkName
+            featuredLinks[key] = name.map { "/app/\(kind)/\($0)" } ?? "/app/sections"
+        }
+
+        return try await req.view.render("root", SectionModel(featuredLinks: featuredLinks, title: "Каталог",
                                                               description: "Разделы приложения",
                                                               sections: sections,
                                                               books: [],
@@ -39,16 +59,8 @@ struct AppSectionController: RouteCollection {
     
     @Sendable
     func section(req: Request) async throws -> View {
-        guard let sectionName = req.parameters.get("sectionName") else {
-            throw Abort(.badRequest)
-        }
-        
-        guard let section = try await Section.query(on: req.db)
-            .filter(\.$name == sectionName)
-            .first() else {
-            throw Abort(.notFound)
-        }
-        
+        let section = try await Section.resolve(req.parameters.get("sectionName"), on: req.db)
+
         guard let sectionId = section.id else {
             throw Abort(.internalServerError, reason: "Section has no id")
         }
@@ -87,13 +99,9 @@ struct AppSectionController: RouteCollection {
     @Sendable
     func book(req: Request) async throws -> View {
         // https://bookreader.hb.ru-msk.vkcloud-storage.ru/bookreader-player.json
-        guard let bookIdStr = req.parameters.get("bookId"),
-              let bookId = UUID(uuidString: bookIdStr) else {
-            throw Abort(.badRequest)
-        }
+
         
-        let book = try await Book.query(on: req.db)
-            .filter(\.$id == bookId)
+        let book = try await Book.matching(req.parameters.get("bookId"), on: req.db)
             .with(\.$user)
             .with(\.$author)
             .with(\.$section)
@@ -145,22 +153,11 @@ struct AppSectionController: RouteCollection {
     
     @Sendable
     func author(req: Request) async throws -> View {
-        guard let author = try await Author.find(req.parameters.get("authorId"), on: req.db) else {
-            throw Abort(.notFound)
-        }
-        
-        let books = try await Book.query(on: req.db)
-            .filter(\.$author.$id == author.requireID())
-            .filter(\.$publishDate < Date.now)
-            .sort(\.$publishDate)
-            .with(\.$user)
-            .with(\.$section)
-            .with(\.$roles) { role in
-                role.with(\.$author)
-            }
-            .all()
+        let author = try await Author.resolve(req.parameters.get("authorId"), on: req.db)
+        let books = try await booksByAuthor(author, on: req.db)
+            .filter { ($0.publishDate ?? .distantFuture) < Date.now }
             .map { $0.toShortDTO() }
-        
+
         let template = "author"
         
         return try await req.view.render(template, AuthorModel(author: author.toDTO(),
@@ -171,13 +168,9 @@ struct AppSectionController: RouteCollection {
     
     @Sendable
     func player(req: Request) async throws -> View {
-        guard let bookIdStr = req.parameters.get("bookId"),
-              let bookId = UUID(uuidString: bookIdStr) else {
-            throw Abort(.badRequest)
-        }
+
                 
-        let book = try await Book.query(on: req.db)
-            .filter(\.$id == bookId)
+        let book = try await Book.matching(req.parameters.get("bookId"), on: req.db)
             .with(\.$user)
             .with(\.$author)
             .with(\.$section)
@@ -213,6 +206,7 @@ struct AppSectionController: RouteCollection {
 
 
 fileprivate struct SectionModel: Codable {
+    var featuredLinks: [String: String] = [:]
     let title: String
     let description: String
     let sections: [SectionDTO]

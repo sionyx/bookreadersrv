@@ -12,7 +12,7 @@ import struct Foundation.Date
 /// Property wrappers interact poorly with `Sendable` checking, causing a warning for the `@ID` property
 /// It is recommended you write your model with sendability checking on and then suppress the warning
 /// afterwards with `@unchecked Sendable`.
-final class Book: Model, @unchecked Sendable {
+final class Book: LinkNamedModel, @unchecked Sendable {
     static let schema = "books"
     
     @ID(key: .id)
@@ -73,9 +73,13 @@ final class Book: Model, @unchecked Sendable {
     var chapters: [Chapter]
 
 
+    @Field(key: "link_name")
+    var linkName: String
+
     init() { }
 
     init(id: UUID? = nil, userID: User.IDValue, authorID: Author.IDValue, sectionID: Section.IDValue, title: String, previewUrl: String, coverUrl: String, textLink: String, description: String, publishDate: Date, template: String) {
+        self.linkName = ""
         self.id = id
         self.$user.id = userID
         self.title = title

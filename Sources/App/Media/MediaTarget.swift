@@ -18,9 +18,7 @@ enum MediaKind: String, Sendable {
     var isAudio: Bool { self == .chapterAudio }
 
     func load(req: Request, database: any Database) async throws -> MediaTarget {
-        guard let value = req.parameters.get(parameter), let id = UUID(uuidString: value) else {
-            throw Abort(.badRequest, reason: "Invalid \(parameter)")
-        }
+        let id = try await identifier(req: req, database: database)
         switch self {
         case .author:
             guard let model = try await lockedEntity(Author.self, id: id, on: database) else { throw missing() }
@@ -34,17 +32,16 @@ enum MediaKind: String, Sendable {
         case .section:
             guard let model = try await lockedEntity(Section.self, id: id, on: database) else { throw missing() }
             if req.method != .POST { return .section(model, "") }
-            let name = try mediaSlug(model.name)
+            let name = try mediaSlug(model.linkName)
             return .section(model, "sections/\(name)/\(name)")
         case .book:
             guard let model = try await lockedEntity(Book.self, id: id, on: database) else { throw missing() }
             if req.method != .POST { return .book(model, "") }
             return .book(model, try await bookPath(model, database: database))
         case .chapterImage, .chapterAudio:
+            let book = try await Book.resolve(req.parameters.get("bookID"), on: database)
             guard let chapter = try await lockedEntity(Chapter.self, id: id, on: database),
-                  let bookID = req.parameters.get("bookID").flatMap(UUID.init(uuidString:)),
-                  chapter.$book.id == bookID,
-                  let book = try await Book.find(bookID, on: database) else { throw missing() }
+                  chapter.$book.id == book.id else { throw missing() }
             // Deletion follows persisted URLs, even if names/authors have since changed.
             if req.method != .POST { return .chapter(chapter, "", isAudio) }
             guard let number = try req.query.decode(MediaQuery.self).chapterNumber, number >= 1 else {
@@ -53,6 +50,20 @@ enum MediaKind: String, Sendable {
             let suffix = String(format: "_chapter_%02ld", number)
             let path = try await bookPath(book, database: database) + suffix
             return .chapter(chapter, path, isAudio)
+        }
+    }
+
+    func identifier(req: Request, database: any Database) async throws -> UUID {
+        let value = req.parameters.get(parameter)
+        switch self {
+        case .author: return try await Author.resolve(value, on: database).requireID()
+        case .section: return try await Section.resolve(value, on: database).requireID()
+        case .book: return try await Book.resolve(value, on: database).requireID()
+        case .user, .chapterImage, .chapterAudio:
+            guard let value, let id = UUID(uuidString: value) else {
+                throw Abort(.badRequest, reason: "Invalid \(parameter)")
+            }
+            return id
         }
     }
 

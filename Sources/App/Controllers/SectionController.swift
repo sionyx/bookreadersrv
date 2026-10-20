@@ -30,9 +30,7 @@ struct SectionController: RouteCollection {
 
     @Sendable
     func one(req: Request) async throws -> SectionContent {
-        guard let section = try await Section.find(req.parameters.get("sectionID"), on: req.db) else {
-            throw Abort(.notFound)
-        }
+        let section = try await Section.resolve(req.parameters.get("sectionID"), on: req.db)
         
         let subsections = try await Section.query(on: req.db)
             .filter(\.$parent.$id == section.requireID())
@@ -66,7 +64,7 @@ struct SectionController: RouteCollection {
     
     @Sendable
     func path(req: Request) async throws -> [SectionDTO] {
-        var section = try await Section.find(req.parameters.get("sectionID"), on: req.db)
+        var section: Section? = try await Section.resolve(req.parameters.get("sectionID"), on: req.db)
         if section == nil {
             throw Abort(.notFound)
         }
@@ -86,20 +84,20 @@ struct SectionController: RouteCollection {
 
     @Sendable
     func create(req: Request) async throws -> SectionDTO {
-        let section = try req.content.decode(SectionDTO.self).toModel()
+        let dto = try req.content.decode(SectionDTO.self)
+        let section = dto.toModel()
+        try await section.assignLinkName(dto.link_name ?? dto.name, source: section.title, on: req.db)
 
-        try await section.save(on: req.db)
+        try await section.saveWithLinkName(on: req.db)
         return section.toDTO()
     }
     
     @Sendable
     func update(req: Request) async throws -> SectionDTO {
-        guard let section = try await Section.find(req.parameters.get("sectionID"), on: req.db) else {
-            throw Abort(.notFound)
-        }
+        let section = try await Section.resolve(req.parameters.get("sectionID"), on: req.db)
         let updatedSection = try req.content.decode(SectionDTO.self)
         section.$parent.id = updatedSection.parentId
-        section.name = updatedSection.name
+        try await section.assignLinkName(updatedSection.link_name ?? updatedSection.name, source: updatedSection.title, on: req.db)
         section.title = updatedSection.title
         // Renaming without media fields keeps the existing S3 links.
         if let url = updatedSection.coverUrl { section.coverUrl = url }
@@ -109,15 +107,13 @@ struct SectionController: RouteCollection {
         section.template = updatedSection.template
         section.bookTemplate = updatedSection.bookTemplate
 
-        try await section.save(on: req.db)
+        try await section.saveWithLinkName(on: req.db)
         return section.toDTO()
     }
 
     @Sendable
     func delete(req: Request) async throws -> HTTPStatus {
-        guard let section = try await Section.find(req.parameters.get("sectionID"), on: req.db) else {
-            throw Abort(.notFound)
-        }
+        let section = try await Section.resolve(req.parameters.get("sectionID"), on: req.db)
 
         try await section.delete(on: req.db)
         return .ok

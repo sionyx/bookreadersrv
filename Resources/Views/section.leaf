@@ -276,7 +276,7 @@
                                     "actions": [
                                         {
                                             "log_id": "button_pressed",
-                                            "url": "navigate://page?title=#(section.title)&url=#(baseUrl)/app/sections/#(section.name)"
+                                            "url": "navigate://page?title=#(section.title)&url=#(baseUrl)/app/sections/#(section.link_name)"
                                         }
                                     ]
                                 },
@@ -290,7 +290,7 @@
                                     "actions": [
                                         {
                                             "log_id": "button_pressed",
-                                            "url": "navigate://page?title=#(book.title)&url=#(baseUrl)/app/books/#(book.id)"
+                                            "url": "navigate://page?title=#(book.title)&url=#(baseUrl)/app/books/#(book.link_name)"
                                         }
                                     ]
                                 },

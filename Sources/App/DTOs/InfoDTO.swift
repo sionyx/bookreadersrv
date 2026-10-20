@@ -9,6 +9,7 @@ import Fluent
 import Vapor
 
 struct InfoDTO: Content {
+    var link_name: String? = nil
     var title: String
     var description: String
     var previewUrl: String
@@ -16,7 +17,7 @@ struct InfoDTO: Content {
 
 extension Book {
     func toInfoDTO() -> InfoDTO {
-        InfoDTO(title: self.title,
+        InfoDTO(link_name: self.linkName, title: self.title,
                 description: self.description,
                 previewUrl: self.coverUrl)
     }
@@ -24,7 +25,7 @@ extension Book {
 
 extension Section {
     func toInfoDTO() -> InfoDTO {
-        InfoDTO(title: self.title,
+        InfoDTO(link_name: self.linkName, title: self.title,
                 description: self.description,
                 previewUrl: self.coverUrl)
     }
@@ -32,7 +33,7 @@ extension Section {
 
 extension Author {
     func toInfoDTO() -> InfoDTO {
-        InfoDTO(title: "\(self.firstName) \(self.lastName)",
+        InfoDTO(link_name: self.linkName, title: "\(self.firstName) \(self.lastName)",
                 description: self.description,
                 previewUrl: self.photoUrl)
     }
